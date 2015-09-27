@@ -26,3 +26,18 @@
 *.exe
 *.out
 *.app
+
+# vim
+*.swp
+tags
+
+# cscope
+cscope*
+
+# EMACS
+*~
+
+# build
+build/
+bin/
+lib/
