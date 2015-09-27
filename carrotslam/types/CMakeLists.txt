@@ -18,5 +18,5 @@ INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}")
 FIND_PACKAGE(OpenCV REQUIRED)
 
 #Add include file and library
-ADD_EXECUTABLE(CameraTest CameraTest.cpp)
-TARGET_LINK_LIBRARIES(CameraTest ${OpenCV_LIBS})
+# ADD_EXECUTABLE(CameraTest CameraTest.cpp)
+# TARGET_LINK_LIBRARIES(CameraTest ${OpenCV_LIBS})
