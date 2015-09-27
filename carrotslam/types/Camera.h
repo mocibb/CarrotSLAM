@@ -1,5 +1,5 @@
 /*!
- * Author: Brad Lucas liufuqiang_robot@hotmail.com
+ * Author: lfq liufuqiang_robot@hotmail.com
  * Group:  CarrotSLAM https://github.com/mocibb/CarrotSLAM
  * Name:   Camera.h
  * Date:   2015.09.27
