@@ -21,6 +21,8 @@ class PinholeCamera : public CameraBase {
   const double cx_, cy_;
   bool distortion_;   //!< is it pure pinhole model or has it radial distortion?
   double d_[5];  //!< distortion parameters, see http://docs.opencv.org/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html
+  //distCoeffs – Output vector of distortion coefficients  (k_1, k_2, p_1, p_2[, k_3[, k_4, k_5, k_6]]) of 4, 5, or 8 elements.
+
   cv::Mat cvK_, cvD_;
   cv::Mat undist_map1_, undist_map2_;
   bool use_optimization_;
