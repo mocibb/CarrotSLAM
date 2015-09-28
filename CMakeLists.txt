@@ -12,6 +12,9 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake") # 添加本地CMake�
 
 INCLUDE(cmake/script_version_number.cmake REQUIRED)#添加项目版本号
 
+#C++编译器选项
+ADD_DEFINITIONS(-std=c++11)
+
 #设置路径
 SET(CarrotSLAM_LIBS_ROOT "${CMAKE_SOURCE_DIR}/carrotslam" CACHE INTERNAL "") 
 SET(CarrotSLAM_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR})
