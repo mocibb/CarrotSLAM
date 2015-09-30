@@ -27,9 +27,9 @@
 #ifndef TYPES_IMAGE_H_
 #define TYPES_IMAGE_H_
 
-#include "core/carrot_slam.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "core/carrot_slam.h"
 
 namespace carrotslam {
 /*! \brief rgbd image object that keep id
