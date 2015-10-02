@@ -1,9 +1,9 @@
 /*!
  * Author: mocibb mocibb@163.com
  * Group:  CarrotSLAM https://github.com/mocibb/CarrotSLAM
- * Name:   image.h
+ * Name:   tum_dataset_reader.h
  * Date:   2015.09.30
- * Func:   image object
+ * Func:   tum dataset reader
  *
  *
  * The MIT License (MIT)
@@ -24,12 +24,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TYPES_IMAGE_H_
-#define TYPES_IMAGE_H_
+#ifndef NODES_TUM_DATASET_READER_H_
+#define NODES_TUM_DATASET_READER_H_
 
+#include <core/carrot_slam.h>
+#include <vector>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include "core/carrot_slam.h"
 
 namespace carrotslam {
 /*! \brief image object that keep id
@@ -37,41 +38,41 @@ namespace carrotslam {
  *
  *  Internally use cv::Mat of opencv for holding image object
  */
-class Image : public ISLAMData {
+class TUMDatasetReader : public ISLAMNode {
+ private:
+  struct TUMDatasetImageLine {
+    TUMDatasetImageLine(const std::string& ts, const std::string& fn)
+        : timestamp(ts),
+          filename(fn) {
+    }
+    std::string timestamp;
+    std::string filename;
+  };
  public:
   /*!
    the constructor of image
    @param img_path the path to image file
    */
-  Image(const std::string& img_path) {
-    id_ = image_id_++;
-    image_ = cv::imread(img_path);
-  }
-  /*!
-   the constructor of image
-   @param image image object
-   */
-  Image(cv::Mat& image)
-      : image_(image) {
-    id_ = image_id_++;
-  }
-  /*!
-   return image object
-   */
-  cv::Mat& image() {
-    return image_;
-  }
-  /*!
-   return image object
-   */
-  const cv::Mat& image() const {
-    return image_;
-  }
+  TUMDatasetReader(const ISLAMEnginePtr& engine, const std::string& path_to_dir);
+
+  ~TUMDatasetReader(){};
+
+  RunResult run();
+
+  inline bool check();
+
+  bool isStart();
+
+  bool isEnd();
 
  protected:
-  cv::Mat image_;          //!< image object
-  static long image_id_;   //!< global counter for image class
+  std::vector<TUMDatasetImageLine> rgb_dataset_;
+  std::vector<TUMDatasetImageLine> depth_dataset_;
+  ISLAMEnginePtr engine_;
+  std::string path_to_dir_;
+  long cnt_;
+
 };
 }   // namespace carrotslam
 
-#endif /* TYPES_IMAGE_H_ */
+#endif /* NODES_TUM_DATASET_READER_H_ */

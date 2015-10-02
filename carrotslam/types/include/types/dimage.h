@@ -46,7 +46,7 @@ class DImage : public ISLAMData {
    */
   DImage(const std::string& color_image_path,
          const std::string& depth_image_path)
-      : id_(image_id_++) {
+      : ISLAMData(image_id_++) {
     color_image_ = cv::imread(color_image_path);
     depth_image_ = cv::imread(depth_image_path);
   }
@@ -56,9 +56,18 @@ class DImage : public ISLAMData {
    @param depth_image depth image object
    */
   DImage(cv::Mat& color_image, cv::Mat& depth_image)
-      : color_image_(color_image),
-        depth_image_(depth_image),
-        id_(image_id_++) {
+      : ISLAMData(image_id_++),
+        color_image_(color_image),
+        depth_image_(depth_image) {
+  }
+  DImage(DImage& other)
+      : ISLAMData(image_id_++),
+        color_image_(other.color_image()),
+        depth_image_(other.depth_image()) {
+    LOG(INFO)<<"copy constructor of DImage is called." << std::endl;
+  }
+  ~DImage() {
+    LOG(INFO)<<"deconstructor of DImage is called." << std::endl;
   }
   /*!
    return color image object
@@ -69,7 +78,7 @@ class DImage : public ISLAMData {
   /*!
    return color image object
    */
-  const cv::Mat& color_image() {
+  const cv::Mat& color_image() const {
     return color_image_;
   }
 
@@ -82,7 +91,7 @@ class DImage : public ISLAMData {
   /*!
    return depth image object
    */
-  const cv::Mat& depth_image() {
+  const cv::Mat& depth_image() const {
     return depth_image_;
   }
 
