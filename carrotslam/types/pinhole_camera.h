@@ -10,7 +10,9 @@
 
 #include "camera_base.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string>
+#include <algorithm>
 #include <Eigen/Eigen>
 #include <opencv2/opencv.hpp>
 
@@ -112,6 +114,19 @@ class PinholeCamera : public CameraBase {
   ;
 
   void undistortImage(const cv::Mat& raw, cv::Mat& rectified);
+  // Calibration Matrix and k1,k2,p1,p2 Distortion Parameters
+  cv::Mat mK_; // Camera Inner Parameters
+  cv::Mat mDistCoef_; // Distortion Parameters
+
+  // Undistorted Image Bounds (computed once)
+  int mnMinX_;
+  int mnMaxX_;
+  int mnMinY_;
+  int mnMaxY_;
+
+  std::vector<cv::KeyPoint> UndistortKeyPoints(std::vector<cv::KeyPoint> vKeys);
+  CvPoint UndistortSinglePoint(CvPoint cpSinglePoint);
+  void ComputeImageBounds(cv::Mat im);
 
 };
 

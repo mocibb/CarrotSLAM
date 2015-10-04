@@ -98,3 +98,93 @@ void PinholeCamera::undistortImage(const cv::Mat& raw, cv::Mat& rectified) {
   else
     rectified = raw.clone();
 }
+
+std::vector<cv::KeyPoint> PinholeCamera::UndistortKeyPoints(std::vector<cv::KeyPoint> vKeys)
+{
+  std::vector<cv::KeyPoint> vKeysUn;
+    if(fabs(mDistCoef_.at<float>(0)) < 1e-3)
+    {
+        vKeysUn = vKeys;
+        return vKeysUn;
+    }
+
+    // Fill matrix with points
+    cv::Mat mat(vKeys.size(), 2, CV_32F);
+    for(unsigned int i=0; i<vKeys.size(); i++)
+    {
+        mat.at<float>(i, 0) = vKeys[i].pt.x;
+        mat.at<float>(i, 1) = vKeys[i].pt.y;
+    }
+
+    // Undistort points
+    mat = mat.reshape(2);
+    cv::undistortPoints(mat, mat, mK_, mDistCoef_, cv::Mat(), mK_);
+    mat = mat.reshape(1);
+
+    // Fill undistorted keypoint vector
+    vKeysUn.resize(vKeys.size());
+    for(unsigned int i=0; i<vKeys.size(); i++)
+    {
+        cv::KeyPoint kp = vKeys[i];
+        kp.pt.x = mat.at<float>(i, 0);
+        kp.pt.y = mat.at<float>(i, 1);
+        vKeysUn[i] = kp;
+    }
+
+  return vKeysUn;
+}
+
+CvPoint PinholeCamera::UndistortSinglePoint(CvPoint cpSinglePoint)
+{
+  CvPoint cpSinglePointUn;
+  if(fabs(mDistCoef_.at<float>(0)) < 1e-3)
+  {
+      cpSinglePointUn = cpSinglePoint;
+      return cpSinglePointUn;
+  }
+
+  // Fill matrix with point
+  cv::Mat mat(1, 2, CV_32F);
+  mat.at<float>(0, 0) = cpSinglePoint.x;
+  mat.at<float>(0, 1) = cpSinglePoint.y;
+
+  // Undistort point
+  mat = mat.reshape(2);
+  cv::undistortPoints(mat, mat, mK_, mDistCoef_, cv::Mat(), mK_);
+  mat = mat.reshape(1);
+
+  // Fill undistorted singlepoint
+  cpSinglePointUn.x = mat.at<float>(0, 0);
+  cpSinglePointUn.x = mat.at<float>(0, 1);
+
+  return cpSinglePointUn;
+}
+
+void PinholeCamera::ComputeImageBounds(cv::Mat im)
+{
+    if(fabs(mDistCoef_.at<float>(0)) > 1e-3)
+    {
+        cv::Mat mat(4, 2, CV_32F);
+        mat.at<float>(0, 0) = 0.0;     mat.at<float>(0, 1) = 0.0;
+        mat.at<float>(1, 0) = im.cols; mat.at<float>(1, 1) = 0.0;
+        mat.at<float>(2, 0) = 0.0;     mat.at<float>(2, 1) = im.rows;
+        mat.at<float>(3, 0) = im.cols; mat.at<float>(3, 1) = im.rows;
+
+        // Undistort corners
+        mat = mat.reshape(2);
+        cv::undistortPoints(mat, mat, mK_, mDistCoef_, cv::Mat(), mK_);
+        mat = mat.reshape(1);
+
+        mnMinX_ = std::min(floor(mat.at<float>(0, 0)), floor(mat.at<float>(2, 0)));
+        mnMaxX_ = std::max(ceil(mat.at<float>(1, 0)),  ceil(mat.at<float>(3, 0)));
+        mnMinY_ = std::min(floor(mat.at<float>(0, 1)), floor(mat.at<float>(1, 1)));
+        mnMaxY_ = std::max(ceil(mat.at<float>(2, 1)),  ceil(mat.at<float>(3, 1)));
+    }
+    else
+    {
+        mnMinX_ = 0;
+        mnMaxX_ = im.cols;
+        mnMinY_ = 0;
+        mnMaxY_ = im.rows;
+    }
+}
