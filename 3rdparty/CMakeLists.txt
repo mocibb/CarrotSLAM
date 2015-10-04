@@ -1,1 +1,2 @@
 ADD_SUBDIRECTORY(sophus)
+ADD_SUBDIRECTORY(pugixml)

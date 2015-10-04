@@ -46,5 +46,6 @@ void SetSLAMEngineContext::setData(const std::string& name,
                                    const ISLAMDataPtr& data) {
   this->container_[name] = data;
 }
+
 }
 

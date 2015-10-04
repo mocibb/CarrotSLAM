@@ -7,16 +7,20 @@
 #include <map>
 #include <iostream>
 #include <glog/logging.h>
+#include <pugixml.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace carrotslam {
 class ISLAMData;
 class ISLAMNode;
 class ISLAMEngine;
+class ISLAMEngineConfig;
 class ISLAMEngineContext;
 
 typedef std::shared_ptr<ISLAMData> ISLAMDataPtr;
 typedef std::shared_ptr<ISLAMNode> ISLAMNodePtr;
 typedef std::shared_ptr<ISLAMEngine> ISLAMEnginePtr;
+typedef std::shared_ptr<ISLAMEngineConfig> ISLAMEngineConfigPtr;
 typedef std::shared_ptr<ISLAMEngineContext> ISLAMEngineContextPtr;
 
 /*! \brief base class for CarrotSLAM DATA.
@@ -30,7 +34,15 @@ class ISLAMData {
   virtual ~ISLAMData() {
     //DLOG(INFO) << "deconstructor of ISLAMData is called." << std::endl;
   }
-
+  /*! read from disk */
+  virtual bool read(std::istream& is) {
+    return false;
+  }
+  /*! write out into disk */
+  virtual bool write(std::ostream& os) {
+    return false;
+  }
+  /*! each ISLAMData with different id */
   long id() {
     return id_;
   }
@@ -62,6 +74,7 @@ class ISLAMNode {
   enum RunResult {
     RUN_FAILED,
     RUN_SUCCESS,
+    RUN_NEXTROUND,
     RUN_FINISH
   };
 
@@ -76,9 +89,25 @@ class ISLAMNode {
   virtual bool isEnd() = 0;
   /*! 运行Node算法 */
   virtual RunResult run() = 0;
+  /*! Node名字 在XML配置中使用 */
+  virtual std::string name() {
+    return name_;
+  }
 
  protected:
   ISLAMEnginePtr engine_;
+  std::string name_;
+};
+
+/*! \brief use to load parameter for each nodes.
+ *
+ */
+class ISLAMEngineConfig {
+ public:
+  virtual ~ISLAMEngineConfig() {
+  }
+  template<typename type>
+  type getValue(const std::string& xpath);
 };
 
 /*! \brief base class for SLAM pipeline.
@@ -108,6 +137,7 @@ class ISLAMEngine {
   }
 
  protected:
+  ISLAMEngineConfigPtr config_;
   ISLAMEngineContextPtr context_;
 };
 
@@ -130,6 +160,57 @@ class SetSLAMEngineContext : public ISLAMEngineContext {
   std::map<std::string, ISLAMDataPtr> container_;
 };
 
+class XMLSLAMEngineConfig : public ISLAMEngineConfig {
+ public:
+  XMLSLAMEngineConfig(const std::string& xml_file) {
+    pugi::xml_parse_result result = doc_.load_file(xml_file.c_str());
+    if (result.status != pugi::status_ok) {
+      throw std::runtime_error(xml_file + " wrong xml!");
+    }
+    node_ = doc_;
+  }
+
+  void chroot(const ISLAMNodePtr& node) {
+    if (node.get() != nullptr) {
+      std::string xpath = "//node[@name='" + node->name() + "']";
+      node_ = doc_.select_node(xpath.c_str()).node();
+    } else{
+      node_ = doc_;
+    }
+  }
+
+  std::vector<std::string> nodes() {
+    std::vector<std::string> ret;
+    pugi::xml_object_range<pugi::xml_node_iterator> nodes = doc_.select_node("//nodes").node().children();
+    for (auto node : nodes ) {
+      ret.push_back(node.attribute("name").value());
+    }
+    return ret;
+  }
+
+  template<typename T>
+  T getValue(const std::string& name) {
+    std::string value = node_.child(name.c_str()).child_value();
+    if (std::is_same<T, int>::value) {
+      return std::atoi(value.c_str());
+    } else if (std::is_same<T, float>::value) {
+      return std::atof(value.c_str());
+    } else if (std::is_same<T, double>::value) {
+      return std::atof(value.c_str());
+    } else if (std::is_same<T, bool>::value){
+      return (value == "true" ? true : false);
+    } else if (std::is_same<T, std::string>::value){
+      return value;
+    }
+
+  }
+
+ protected:
+  std::string root_;
+  pugi::xml_document doc_;
+  pugi::xml_node node_;
+};
+
 /*! \brief 顺序执行的SLAMEngine
  *         所有Node都按顺序执行，如果Node执行失败，从第二个开始。
  *         第二个Node是初始化/重新初始化
@@ -148,5 +229,7 @@ class SequenceSLAMEngine : public ISLAMEngine {
  private:
   std::vector<ISLAMNodePtr> nodes_;
 };
+
+
 } // namespace carrotslam
 #endif /* CARROT_SLAM_H_ */

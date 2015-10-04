@@ -1,7 +1,7 @@
 /*!
  * Author: mocibb mocibb@163.com
  * Group:  CarrotSLAM https://github.com/mocibb/CarrotSLAM
- * Name:   tum_dataset_reader.h
+ * Name:   tum_dataset_reader.cpp
  * Date:   2015.09.30
  * Func:   tum dataset reader
  *
