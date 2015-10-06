@@ -58,18 +58,20 @@ typedef std::shared_ptr<Feature> FeaturePtr;
 class Feature : public ISLAMData {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  Eigen::Vector2f px;              //!<     Coordinates in pixels on pyramid level 0.
+  Eigen::Vector2f px;              //!<     畸变矫正后的坐标 Undisorted coordinates in pixels on pyramid level 0.
   int half_size;                   //!<     orbslam时half_size=0， svo时half_size=4
   Eigen::Vector3f f;               //!<     Unit-bearing vector of the feature.
   Eigen::Vector3f pos;             //!<     Pointer to 3D point which corresponds to the feature.
-  cv::Mat descriptor;
+  cv::Mat descriptor;              //!<     ORBSLAM
+  float angle;                     //!<     ORBSLAM
+  bool is_converged;               //!<     should (Eigen::Vector3f pos) is ready for use.
   float min_depth;                 //!<     MapPoint.mfMinDistance;
   float max_depth;                 //!<     MapPoint.mfMaxDistance;
   int level;                       //!<     KeyPoint.octave
-  bool is_outlier;                 //!<
-  bool is_keyframe;                //!<
   FramePtr frame;
+  static std::vector<float> scale_factors;
   static std::vector<float> inv_level_sigma2;
+  static float (*descriptorDist)(cv::Mat d1, cv::Mat d2);
 };
 
 

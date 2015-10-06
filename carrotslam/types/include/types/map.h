@@ -1,9 +1,9 @@
 /*!
  * Author: mocibb mocibb@163.com
  * Group:  CarrotSLAM https://github.com/mocibb/CarrotSLAM
- * Name:   frame.h
- * Date:   2015.10.02
- * Func:   frame is composed of  camera image and camera pose
+ * Name:   map.h
+ * Date:   2015.10.06
+ * Func:   map object contains keyframes and mappoints
  *
  *
  * The MIT License (MIT)
@@ -24,27 +24,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TYPES_FRAME_H_
-#define TYPES_FRAME_H_
+#ifndef TYPES_MAP_H_
+#define TYPES_MAP_H_
 #include <Eigen/Core>
 #include "core/carrot_slam.h"
 #include "types/pinhole_camera.h"
 
 namespace carrotslam {
-class PinholeCamera;
 class Feature;
+class MapPoint;
 
-typedef std::shared_ptr<PinholeCamera> CameraPtr;
 typedef std::shared_ptr<Feature> FeaturePtr;
-class Frame : public ISLAMData {
+typedef std::shared_ptr<MapPoint> MapPointPtr;
+class Map : public ISLAMData {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  Sophus::SE3f T_f_w; //!< 世界坐标到Frame坐标系变换  Transform (f)rame from (w)orld.
-  bool is_keyframe;   //!<
-  std::vector< FeaturePtr > features; //!< 图像特征 image feature
-  CameraPtr cam; //!< 相机模型 Camera model.
+  std::vector< FramePtr > key_frames; //!<
+  std::vector< MapPointPtr > map_points; //!<
 };
 
 }  // namespace carrotslam
 
-#endif /* TYPES_FRAME_H_ */
+#endif /* TYPES_MAP_H_ */
