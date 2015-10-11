@@ -7,8 +7,8 @@
 #include <map>
 #include <iostream>
 #include <glog/logging.h>
-#include <pugixml.hpp>
 #include <boost/algorithm/string.hpp>
+#include <pugixml.hpp>
 
 namespace carrotslam {
 class ISLAMData;
