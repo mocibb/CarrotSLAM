@@ -34,6 +34,7 @@
 
 #include <Eigen/Core>
 
+namespace carrotslam {
 //Camera Interface
 enum E_CAMERA_INTERFACE {
   E_INTERFACE_USB2 = 0,
@@ -162,5 +163,5 @@ class CameraBase {
     return false;
   }
 };
-
+} // namespace carrotslam
 #endif /* CAMERA_BASE_H_ */

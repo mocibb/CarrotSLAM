@@ -16,6 +16,7 @@
 #include <Eigen/Eigen>
 #include <opencv2/opencv.hpp>
 
+namespace carrotslam {
 class PinholeCamera : public CameraBase {
 
  private:
@@ -55,6 +56,12 @@ class PinholeCamera : public CameraBase {
 
   virtual Eigen::Vector2d
   world2cam(const Eigen::Vector2d& uv) const;
+
+  virtual Eigen::Vector2f
+  world2cam(const Eigen::Vector3f& xyz_c) const;
+
+  virtual Eigen::Vector2f
+  world2cam(const Eigen::Vector2f& uv) const;
 
   const Eigen::Vector2d focal_length() const {
     return Eigen::Vector2d(fx_, fy_);
@@ -128,6 +135,23 @@ class PinholeCamera : public CameraBase {
   CvPoint UndistortSinglePoint(CvPoint cpSinglePoint);
   void ComputeImageBounds(cv::Mat im);
 
+  inline bool isInFrame(const Eigen::Vector2i & obs, int boundary = 0) const {
+    if (obs[0] >= mnMinX_+boundary && obs[0] < mnMaxX_ - boundary && obs[1] >= mnMinY_+boundary
+        && obs[1] < mnMaxY_ - boundary)
+      return true;
+    return false;
+  }
+
+  inline bool isInFrame(const Eigen::Vector2i &o, int boundary,
+                        int level) const {
+    Eigen::Vector2i obs = obs*(1 << level);
+    if (obs[0] >= mnMinX_+boundary && obs[0] < mnMaxX_ - boundary && obs[1] >= mnMinY_+boundary
+        && obs[1] < mnMaxY_ - boundary)
+      return true;
+    return false;
+  }
+
 };
 
+} // namespace carrotslam
 #endif /* PINHOLE_CAMERA_H_ */

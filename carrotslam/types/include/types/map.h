@@ -33,9 +33,12 @@
 namespace carrotslam {
 class Feature;
 class MapPoint;
+class Map;
 
 typedef std::shared_ptr<Feature> FeaturePtr;
 typedef std::shared_ptr<MapPoint> MapPointPtr;
+typedef std::shared_ptr<Map> MapPtr;
+
 class Map : public ISLAMData {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

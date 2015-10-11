@@ -1,9 +1,9 @@
 /*!
  * Author: mocibb mocibb@163.com
  * Group:  CarrotSLAM https://github.com/mocibb/CarrotSLAM
- * Name:   frame.h
+ * Name:   mappoint.h
  * Date:   2015.10.02
- * Func:   frame is composed of  camera image and camera pose
+ * Func:   mappoint is feature that no associates with any frame
  *
  *
  * The MIT License (MIT)
@@ -24,28 +24,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TYPES_FRAME_H_
-#define TYPES_FRAME_H_
+#ifndef TYPES_POINT_H_
+#define TYPES_POINT_H_
 #include <Eigen/Core>
-#include <sophus/se3.hpp>
+#include <list>
 #include "core/carrot_slam.h"
-#include "types/pinhole_camera.h"
 
 namespace carrotslam {
-class PinholeCamera;
-class Feature;
-
-typedef std::shared_ptr<PinholeCamera> CameraPtr;
-typedef std::shared_ptr<Feature> FeaturePtr;
-class Frame : public ISLAMData {
+/*! \brief patch object represents point and semi-dense features.
+ */
+struct Patch {
+  Eigen::Vector2f center;
+  int half_size;
+  int level;
+};
+typedef std::shared_ptr<Patch> PatchPtr;
+/*! \brief
+ *
+ *
+ *  MapPoint是不依赖与Frame的特征点
+ *
+ */
+class Point : public ISLAMData {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  Sophus::SE3f T_f_w; //!< 世界坐标到Frame坐标系变换  Transform (f)rame from (w)orld.
-  bool is_keyframe;   //!<
-  std::vector< FeaturePtr > features; //!< 图像特征 image feature
-  CameraPtr cam; //!< 相机模型 Camera model.
+  enum PointType {
+    TYPE_DELETED,
+    TYPE_CANDIDATE,
+    TYPE_UNKNOWN,
+    TYPE_GOOD
+  };
+  Eigen::Vector3f pos;                          //!< 位置
+  Eigen::Vector3f pos_range[2];                 //!< 深度范围
+  std::list<FeaturePtr> observations;           //!<
+  PointType type;                               //!<
 };
 
 }  // namespace carrotslam
 
-#endif /* TYPES_FRAME_H_ */
+#endif /* TYPES_POINT_H_ */
