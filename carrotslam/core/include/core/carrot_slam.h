@@ -60,10 +60,60 @@ class ISLAMEngineContext {
   }
 
   /*! 获取指定名字的数据 */
-  virtual void getData(const std::string& name, ISLAMDataPtr& data) = 0;
+  template<typename T>
+  void getData(const std::string& name, std::shared_ptr<T>& data){}
 
   /*! 保存指定名字的数据*/
-  virtual void setData(const std::string& name, const ISLAMDataPtr& data) = 0;
+  template<typename T>
+  void setData(const std::string& name, const std::shared_ptr<T>& data){}
+};
+
+/*! \brief base class for SLAM pipeline.
+ *
+ */
+class ISLAMEngine {
+ public:
+  ISLAMEngine(ISLAMEngineContextPtr& context)
+      : context_(context) {
+  }
+  virtual ~ISLAMEngine() {
+    //DLOG(INFO) << "deconstructor of ISLAMEngine is called." << std::endl;
+  }
+  /*! 在run之前检查所有Node需要满足的运行条件 */
+  virtual bool check() = 0;
+  /*! 运行所有的Node算法 */
+  virtual void run() = 0;
+
+  /*! 获取指定名字的数据 */
+  template<typename T>
+  void getData(const std::string& name, std::shared_ptr<T>& data) {
+    context_->getData(name, data);
+  }
+
+  /*! 保存指定名字的数据*/
+  template<typename T>
+  void setData(const std::string& name, std::shared_ptr<T>& data) {
+    context_->setData(name, data);
+  }
+
+ protected:
+  ISLAMEngineConfigPtr config_;
+  ISLAMEngineContextPtr context_;
+  friend class ISLAMNode;
+};
+
+/*! \brief use to load parameter for each nodes.
+ *
+ */
+class ISLAMEngineConfig {
+ public:
+  virtual ~ISLAMEngineConfig() {
+  }
+  template<typename T>
+  T getValue(const std::string& xpath);
+
+  template<typename T>
+  T getValue(const std::string& xpath, T val);
 };
 
 /*! \brief base class for each algorithm runs.
@@ -89,56 +139,27 @@ class ISLAMNode {
   virtual bool isEnd() = 0;
   /*! 运行Node算法 */
   virtual RunResult run() = 0;
+
   /*! Node名字 在XML配置中使用 */
   virtual std::string name() {
     return name_;
   }
 
+  /*! 获取Nodes配置参数*/
+  template<typename T>
+  T getValue(const std::string& name) {
+    return engine_->config_->getValue<T>(name);
+  }
+
+  /*! 获取Nodes配置参数*/
+  template<typename T>
+  T getValue(const std::string& name, T val) {
+    return engine_->config_->getValue<T>(name, val);
+  }
+
  protected:
   ISLAMEnginePtr engine_;
   std::string name_;
-};
-
-/*! \brief use to load parameter for each nodes.
- *
- */
-class ISLAMEngineConfig {
- public:
-  virtual ~ISLAMEngineConfig() {
-  }
-  template<typename type>
-  type getValue(const std::string& xpath);
-};
-
-/*! \brief base class for SLAM pipeline.
- *
- */
-class ISLAMEngine {
- public:
-  ISLAMEngine(ISLAMEngineContextPtr& context)
-      : context_(context) {
-  }
-  virtual ~ISLAMEngine() {
-    //DLOG(INFO) << "deconstructor of ISLAMEngine is called." << std::endl;
-  }
-  /*! 在run之前检查所有Node需要满足的运行条件 */
-  virtual bool check() = 0;
-  /*! 运行所有的Node算法 */
-  virtual void run() = 0;
-
-  /*! 获取指定名字的数据 */
-  virtual void getData(const std::string& name, ISLAMDataPtr& data) {
-    context_->getData(name, data);
-  }
-
-  /*! 保存指定名字的数据*/
-  virtual void setData(const std::string& name, const ISLAMDataPtr& data) {
-    context_->setData(name, data);
-  }
-
- protected:
-  ISLAMEngineConfigPtr config_;
-  ISLAMEngineContextPtr context_;
 };
 
 /*! \brief 简单的ISLAMEngineContext的实现，所有的数据都放到内存中。
@@ -151,11 +172,21 @@ class SetSLAMEngineContext : public ISLAMEngineContext {
     //DLOG(INFO) << "deconstructor of SetSLAMEngineContext is called." << std::endl;
   }
   /*! 获取指定名字的数据 */
-  void getData(const std::string& name, ISLAMDataPtr& data);
+  template<typename T>
+  void getData(const std::string& name, std::shared_ptr<T>& data) {
+    if (this->container_.count(name) > 0) {
+      //data.reset(this->container_[name].get()); this code is very buggy!!!!
+      data = this->container_[name];
+    } else {
+      data.reset();
+    }
+  }
 
   /*! 保存指定名字的数据*/
-  void setData(const std::string& name, const ISLAMDataPtr& data);
-
+  template<typename T>
+  void setData(const std::string& name, const std::shared_ptr<T>& data) {
+    this->container_[name] = data;
+  }
  protected:
   std::map<std::string, ISLAMDataPtr> container_;
 };
@@ -202,7 +233,26 @@ class XMLSLAMEngineConfig : public ISLAMEngineConfig {
     } else if (std::is_same<T, std::string>::value){
       return value;
     }
+  }
 
+  template<typename T>
+  T getValue(const std::string& name, T val) {
+    pugi::xml_node nd = node_.child(name.c_str());
+    if (nd == 0) {
+      return val;
+    }
+    std::string value = nd.child_value();
+    if (std::is_same<T, int>::value) {
+      return std::atoi(value.c_str());
+    } else if (std::is_same<T, float>::value) {
+      return std::atof(value.c_str());
+    } else if (std::is_same<T, double>::value) {
+      return std::atof(value.c_str());
+    } else if (std::is_same<T, bool>::value){
+      return (value == "true" ? true : false);
+    } else if (std::is_same<T, std::string>::value){
+      return value;
+    }
   }
 
  protected:
