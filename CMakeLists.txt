@@ -38,7 +38,7 @@ endif (ENABLE_SOLUTION_FOLDERS)
 
 #添加libs
 FIND_PACKAGE(OpenCV REQUIRED) #通过CMake系统添加OpenCV
-FIND_PACKAGE(Boost REQUIRED COMPONENTS filesystem system)  #通过CMake系统添加Boost
+FIND_PACKAGE(Boost REQUIRED COMPONENTS filesystem system date_time)  #通过CMake系统添加Boost
 FIND_PACKAGE(G2O REQUIRED) #通过CMake系统添加G2O
 #TODO 添加sophus
 include(cmake/script_eigen.cmake REQUIRED)  #添加Eigen
@@ -58,6 +58,10 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 INCLUDE_DIRECTORIES("3rdparty/pugixml")
 INCLUDE_DIRECTORIES("3rdparty/sophus/include")
 LINK_DIRECTORIES("${CMAKE_BINARY_DIR}/lib")
+
+IF(MSVC)
+  INCLUDE_DIRECTORIES("3rdparty/glog/src/windows")
+ENDIF(MSVC)
 
 #设置路径，保存lib和bin到同一目录
 SET( LIBRARY_OUTPUT_PATH ${CarrotSLAM_BINARY_DIR}/lib CACHE PATH "Output directory for libraries" )
