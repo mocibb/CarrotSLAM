@@ -56,12 +56,12 @@ FOREACH(_FILE ${_ALL_INCLUDE_DIRS})
 ENDFOREACH()
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 INCLUDE_DIRECTORIES("3rdparty/pugixml")
+INCLUDE_DIRECTORIES("3rdparty/sophus/include")
+LINK_DIRECTORIES("${CMAKE_BINARY_DIR}/lib")
 
 IF(MSVC)
   INCLUDE_DIRECTORIES("3rdparty/glog/src/windows")
 ENDIF(MSVC)
-
-LINK_DIRECTORIES("${CMAKE_BINARY_DIR}/lib")
 
 #设置路径，保存lib和bin到同一目录
 SET( LIBRARY_OUTPUT_PATH ${CarrotSLAM_BINARY_DIR}/lib CACHE PATH "Output directory for libraries" )
