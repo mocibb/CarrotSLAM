@@ -32,6 +32,9 @@ void SequenceSLAMEngine::run() {
 SetSLAMEngineContext::SetSLAMEngineContext() {
 }
 
+/**
+ * \warning 这俩函数似乎在carrot_slam.h:175里提供了实现，这里会出现重定义
+/*
 void SetSLAMEngineContext::getData(const std::string& name,
                                    ISLAMDataPtr& data) {
   if (this->container_.count(name) > 0) {
@@ -41,11 +44,14 @@ void SetSLAMEngineContext::getData(const std::string& name,
     data.reset();
   }
 }
-
+*/
+/*
 void SetSLAMEngineContext::setData(const std::string& name,
                                    const ISLAMDataPtr& data) {
   this->container_[name] = data;
 }
+
+*/
 
 }
 

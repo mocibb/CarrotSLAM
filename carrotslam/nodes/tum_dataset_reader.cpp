@@ -46,6 +46,9 @@ TUMDatasetReader::TUMDatasetReader(const ISLAMEnginePtr& engine,
     : engine_(engine),
       path_to_dir_(path_to_dir),
       cnt_(0) {
+  /** \warning 尽量不要在构造函数里抛出异常，可以放到check中
+   * \brief 读取参数中对应的数据文件夹里的所有文件，将在run时以DImage数据返回。
+   */
   string rgb_txt_path_ = path_to_dir + "/rgb.txt";
   string depth_txt_path_ = path_to_dir + "/depth.txt";
   if (!boost::filesystem::exists(rgb_txt_path_)) {
