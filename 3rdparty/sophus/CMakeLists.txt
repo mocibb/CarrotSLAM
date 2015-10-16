@@ -9,4 +9,5 @@ ${PROJECT_SOURCE_DIR}/include/sophus/*.hpp )
 SET(SOURCES  ${sophus_source})
 
 # 添加头文件，是模板库，不链接lib
-INCLUDE_DIRECTORIES(include/sophus)
+# INCLUDE_DIRECTORIES(include/sophus)
+INCLUDE_DIRECTORIES(include)

@@ -27,7 +27,7 @@
 #ifndef TYPES_FRAME_H_
 #define TYPES_FRAME_H_
 #include <Eigen/Core>
-#include <sophus/se3.hpp>
+#include "sophus/se3.hpp"
 #include "core/carrot_slam.h"
 #include "types/pinhole_camera.h"
 

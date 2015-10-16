@@ -68,7 +68,7 @@ class TUMDatasetReader : public ISLAMNode {
  protected:
   std::vector<TUMDatasetImageLine> rgb_dataset_;
   std::vector<TUMDatasetImageLine> depth_dataset_;
-  ISLAMEnginePtr engine_;
+  ISLAMEnginePtr engine_;  // 这个在基类是否已经有了?
   std::string path_to_dir_;
   long cnt_;
 

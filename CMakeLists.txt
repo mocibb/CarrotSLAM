@@ -41,6 +41,7 @@ FIND_PACKAGE(OpenCV REQUIRED) #通过CMake系统添加OpenCV
 FIND_PACKAGE(Boost REQUIRED COMPONENTS filesystem system)  #通过CMake系统添加Boost
 FIND_PACKAGE(G2O REQUIRED) #通过CMake系统添加G2O
 #TODO 添加sophus
+INCLUDE_DIRECTORIES("3rdparty/sophus/include")#设置包含当前目录
 include(cmake/script_eigen.cmake REQUIRED)  #添加Eigen
 
 #TODO 构建静态库还是动态库，目前先设置为静态库，后期更改为默认动态库
