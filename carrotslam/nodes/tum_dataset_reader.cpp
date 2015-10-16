@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * Author: mocibb mocibb@163.com
  * Group:  CarrotSLAM https://github.com/mocibb/CarrotSLAM
  * Name:   tum_dataset_reader.cpp
@@ -65,7 +65,7 @@ TUMDatasetReader::TUMDatasetReader(const ISLAMEnginePtr& engine,
   {
     ScopeTime(LOG(INFO), "TUMDatasetReader reading dataset");
     //ScopeTime(std::cerr, "TUMDatasetReader reading dataset");
-    while (getline(rgb_txt_istream_, rgb_line_) > 0) {
+    while (!getline(rgb_txt_istream_, rgb_line_).eof()) {
       if (rgb_line_[0] != '#') {
         std::vector<std::string> strs;
         boost::split(strs, rgb_line_, is_space());
@@ -73,7 +73,7 @@ TUMDatasetReader::TUMDatasetReader(const ISLAMEnginePtr& engine,
       }
     }
 
-    while (getline(depth_txt_istream_, depth_line_) > 0) {
+    while (!getline(depth_txt_istream_, depth_line_).eof()) {
       if (depth_line_[0] != '#') {
         std::vector<std::string> strs;
         boost::split(strs, depth_line_, is_space());

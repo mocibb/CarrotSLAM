@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * Author: mocibb mocibb@163.com
  * Group:  CarrotSLAM https://github.com/mocibb/CarrotSLAM
  * Name:   tum_dataset_reader.h
