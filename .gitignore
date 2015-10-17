@@ -41,3 +41,7 @@ cscope*
 build/
 bin/
 lib/
+
+# doxygen
+doc/html/
+doc/latex/

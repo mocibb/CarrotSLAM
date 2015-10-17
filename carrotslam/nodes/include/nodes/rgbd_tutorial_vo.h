@@ -1,11 +1,9 @@
-﻿/*!
- * Author: mocibb mocibb@163.com
- * Group:  CarrotSLAM https://github.com/mocibb/CarrotSLAM
- * Name:   tum_dataset_reader.h
- * Date:   2015.09.30
- * Func:   tum dataset reader
- *
- *
+/*************************************************************************
+	> File Name: include/nodes/rgbd_tutorial_vo.h
+	> Author: gaoxiang
+	> Mail: gaoxiang12@mails.tsinghua.edu.cn
+	> Created Time: 2015年10月11日 星期日 16时53分36秒
+
  * The MIT License (MIT)
  * Copyright (c) 2015 CarrotSLAM Group
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,56 +21,40 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
-#ifndef NODES_TUM_DATASET_READER_H_
-#define NODES_TUM_DATASET_READER_H_
+ ************************************************************************/
+
+#ifndef _INCLUDE/NODES/RGBD_TUTORIAL_VO_H
+#define _INCLUDE/NODES/RGBD_TUTORIAL_VO_H
 
 #include <core/carrot_slam.h>
+
+// std c++
+#include <iostream>
+#include <fstream>
 #include <vector>
+
+// opencv 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/nonfree/nonfree.hpp>
+#include <opencv2/core/eigen.hpp>
 
-namespace carrotslam {
-/*! \brief image object that keep id
- *
- *
- *  Internally use cv::Mat of opencv for holding image object
+// pcl
+// 然而暂时用不到pcl
+
+// namespace carrotslam {
+
+/** \class RGBDTutorial_VO
+ * \brief 一起做系列的VO类
  */
-class TUMDatasetReader : public ISLAMNode {
- private:
-  struct TUMDatasetImageLine {
-    TUMDatasetImageLine(const std::string& ts, const std::string& fn)
-        : timestamp(ts),
-          filename(fn) {
-    }
-    std::string timestamp;
-    std::string filename;
-  };
- public:
-  /*!
-   the constructor of image
-   @param img_path the path to image file
-   */
-  TUMDatasetReader(const ISLAMEnginePtr& engine, const std::string& path_to_dir);
 
-  ~TUMDatasetReader(){};
-
-  RunResult run();
-
-  inline bool check();
-
-  bool isStart();
-
-  bool isEnd();
-
- protected:
-  std::vector<TUMDatasetImageLine> rgb_dataset_;
-  std::vector<TUMDatasetImageLine> depth_dataset_;
-  ISLAMEnginePtr engine_;
-  std::string path_to_dir_;
-  long cnt_;
-
-};
-}   // namespace carrotslam
-
-#endif /* NODES_TUM_DATASET_READER_H_ */
+class RGBDTutorial_VO : public ISLAMNode
+{
+    public:
+    /**
+     * constructor
+     */
+}
+// }
+#endif

@@ -13,6 +13,8 @@
 #include <math.h>
 #include <opencv2/opencv.hpp>
 
+using namespace carrotslam;
+
 PinholeCamera::
 PinholeCamera(double width, double height,
     double fx, double fy,

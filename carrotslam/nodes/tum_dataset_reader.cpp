@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  * Author: mocibb mocibb@163.com
  * Group:  CarrotSLAM https://github.com/mocibb/CarrotSLAM
  * Name:   tum_dataset_reader.cpp
@@ -46,6 +46,9 @@ TUMDatasetReader::TUMDatasetReader(const ISLAMEnginePtr& engine,
     : engine_(engine),
       path_to_dir_(path_to_dir),
       cnt_(0) {
+  /** \warning 尽量不要在构造函数里抛出异常，可以放到check中
+   * \brief 读取参数中对应的数据文件夹里的所有文件，将在run时以DImage数据返回。
+   */
   string rgb_txt_path_ = path_to_dir + "/rgb.txt";
   string depth_txt_path_ = path_to_dir + "/depth.txt";
   if (!boost::filesystem::exists(rgb_txt_path_)) {
@@ -62,7 +65,7 @@ TUMDatasetReader::TUMDatasetReader(const ISLAMEnginePtr& engine,
   {
     ScopeTime(LOG(INFO), "TUMDatasetReader reading dataset");
     //ScopeTime(std::cerr, "TUMDatasetReader reading dataset");
-    while (getline(rgb_txt_istream_, rgb_line_) > 0) {
+    while (!getline(rgb_txt_istream_, rgb_line_).eof()) {
       if (rgb_line_[0] != '#') {
         std::vector<std::string> strs;
         boost::split(strs, rgb_line_, is_space());
@@ -70,7 +73,7 @@ TUMDatasetReader::TUMDatasetReader(const ISLAMEnginePtr& engine,
       }
     }
 
-    while (getline(depth_txt_istream_, depth_line_) > 0) {
+    while (!getline(depth_txt_istream_, depth_line_).eof()) {
       if (depth_line_[0] != '#') {
         std::vector<std::string> strs;
         boost::split(strs, depth_line_, is_space());
