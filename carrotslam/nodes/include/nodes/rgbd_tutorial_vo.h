@@ -96,13 +96,37 @@ public:
     bool isEnd();
 
     // 自有函数
+protected:
 
+    /**
+     * \brief 读取第一帧的数据
+     */
+    void initialize() 
+    {
+        ISLAMDataPtr data; 
+        engine_->getData( "dimage", data  );
+        last_pose_ = std::dynamic_pointer_cast< DImage > (data);
+        this_frame_ = extractFeatures(); 
+        status_ = RUNNING;
+    }
+
+    // \brief 计算与last_pose_的相对位姿并输出结果
+    void compute(); 
+
+    // \brief 提取last_pose里的特征，使用Frame接口
+    std::shared_ptr<Frame> extractFeatures(); 
 
 protected:
     // 数据成员
-    std::shared_ptr<DImage>  last_pose_;  // 上一帧图像
-    RGBDTUTORIALVO_PARAMS params_;  //参数配置
-    VOStatus   status_; //自身的状态
+    std::shared_ptr<DImage>     last_pose_;     // 上一帧图像
+    std::shared_ptr<Frame>      this_frame_;    //当前帧
+    RGBDTUTORIALVO_PARAMS       params_;        //参数配置
+    VOStatus                    status_;        //自身的状态
+
+    // 特征相关
+    cv::Ptr< cv::FeatureDetector > detector_; 
+    cv::Ptr< cv::DescriptorExtractor > descriptor_; 
+
 };
 
 
