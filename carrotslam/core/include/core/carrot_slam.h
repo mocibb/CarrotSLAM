@@ -210,6 +210,15 @@ getSLAMData(const ISLAMEnginePtr& engine, const std::string& name) {
   return std::dynamic_pointer_cast<T>(data);
 }
 
+/*!
+ * 设置指定类型的ISLAMData数据
+ */
+template<typename T>
+void setSLAMData(const ISLAMEnginePtr& engine, const std::string& name,
+                 std::shared_ptr<T>& data) {
+  engine->setData(name, std::dynamic_pointer_cast<ISLAMData>(data));
+}
+
 /*! \brief 简单的ISLAMEngineContext的实现，所有的数据都放到内存中。
  *         因为SLAM中数据结构很大，所以需要一个更复杂的ISLAMEngineContext的实现
  */

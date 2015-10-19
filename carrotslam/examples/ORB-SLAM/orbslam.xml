@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<engine>
+    <nodes>
+        <node seq="1" name="tum_dataset_reader">
+            <datasetDir>/home/mocibb/dataset/tum/rgbd_dataset_freiburg1_floor</datasetDir>
+        </node>
+        <node seq="2" name="orbslam_tracking">
+            <motionModel>true</motionModel>
+            <checkOrientation>true</checkOrientation>
+            <nnRatio>0.7</nnRatio>
+            <distThreshold>80</distThreshold>
+            <histogramLength>20</histogramLength>
+        </node>        
+        <!--
+        <node seq="2" name="orbslam_tracking">
+            <motionModel>true</motionModel>
+            <checkOrientation>true</checkOrientation>
+            <nnRatio>0.7</nnRatio>
+            <distThreshold>80</distThreshold>
+            <histogramLength>20</histogramLength>
+        </node>
+        -->
+    </nodes>
+</engine>

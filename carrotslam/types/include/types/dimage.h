@@ -30,6 +30,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "core/carrot_slam.h"
+#include <glog/logging.h>
 
 namespace carrotslam {
 /*! \brief rgbd image object that keep id

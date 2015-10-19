@@ -26,9 +26,15 @@
  */
 
 #include <vector>
-#include "g2o/core/base_vertex.h"
-#include "g2o/core/base_binary_edge.h"
-#include "g2o/types/slam3d/se3_ops.h"
+#include <set>
+#include "core/carrot_slam.h"
+#include "types/frame.h"
+#include "types/feature.h"
+#include "types/map.h"
+#include "types/point.h"
+
+#ifndef NODES_ORBSLAM_OPTIMIZER_H_
+#define NODES_ORBSLAM_OPTIMIZER_H_
 
 using namespace std;
 using namespace Eigen;
@@ -70,3 +76,29 @@ class EdgeSE3ProjectXYZ : public BaseBinaryEdge<2, Vector2d, VertexSBAPointXYZ,
 };
 
 }  // namespace g2o
+
+namespace carrotslam {
+namespace orbslam {
+struct XYZ2UV {
+  Eigen::Vector3f pos;
+  Eigen::Vector2f px;
+  float inv_sigma2;
+  bool is_deleted;
+  FeaturePtr current;
+  FeaturePtr previous;
+  XYZ2UV(const FeaturePtr& feat) {
+    pos = feat->point->pos;
+    px = feat->px;
+    inv_sigma2 = Feature::inv_level_sigma2[feat->level];
+    is_deleted = false;
+    current = nullptr;
+    previous = nullptr;
+  }
+};
+typedef std::shared_ptr<XYZ2UV> XYZ2UVPtr;
+//should change method with more specific name???
+int poseOptimization(const CameraPtr& cam, std::vector<XYZ2UVPtr>& points, Sophus::SE3f& T_f_w);
+}// namespace orbslam
+}// namespace carrotslam
+
+#endif /*  NODES_ORBSLAM_OPTIMIZER_H_ */
