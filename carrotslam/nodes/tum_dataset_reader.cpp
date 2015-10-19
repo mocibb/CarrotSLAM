@@ -41,16 +41,13 @@ using namespace std;
 using namespace google;
 using namespace boost::algorithm;
 
-TUMDatasetReader::TUMDatasetReader(const ISLAMEnginePtr& engine,
-                                   const string& path_to_dir)
-    : engine_(engine),
-      path_to_dir_(path_to_dir),
-      cnt_(0) {
-  /** \warning 尽量不要在构造函数里抛出异常，可以放到check中
-   * \brief 读取参数中对应的数据文件夹里的所有文件，将在run时以DImage数据返回。
-   */
-  string rgb_txt_path_ = path_to_dir + "/rgb.txt";
-  string depth_txt_path_ = path_to_dir + "/depth.txt";
+TUMDatasetReader::TUMDatasetReader(const ISLAMEnginePtr& engine, const string& name)
+    : cnt_(0),
+      ISLAMNode(engine, name) {
+  dataset_dir_ = getTypedValue<string>(this, "datasetDir");
+
+  string rgb_txt_path_ = dataset_dir_ + "/rgb.txt";
+  string depth_txt_path_ = dataset_dir_ + "/depth.txt";
   if (!boost::filesystem::exists(rgb_txt_path_)) {
     throw std::runtime_error("rgb.txt not exist!");
   }
@@ -65,7 +62,7 @@ TUMDatasetReader::TUMDatasetReader(const ISLAMEnginePtr& engine,
   {
     ScopeTime(LOG(INFO), "TUMDatasetReader reading dataset");
     //ScopeTime(std::cerr, "TUMDatasetReader reading dataset");
-    while (!getline(rgb_txt_istream_, rgb_line_).eof()) {
+    while (getline(rgb_txt_istream_, rgb_line_)) {
       if (rgb_line_[0] != '#') {
         std::vector<std::string> strs;
         boost::split(strs, rgb_line_, is_space());
@@ -73,7 +70,7 @@ TUMDatasetReader::TUMDatasetReader(const ISLAMEnginePtr& engine,
       }
     }
 
-    while (!getline(depth_txt_istream_, depth_line_).eof()) {
+    while (getline(depth_txt_istream_, depth_line_)) {
       if (depth_line_[0] != '#') {
         std::vector<std::string> strs;
         boost::split(strs, depth_line_, is_space());
@@ -83,7 +80,7 @@ TUMDatasetReader::TUMDatasetReader(const ISLAMEnginePtr& engine,
 
     if (rgb_dataset_.size() != depth_dataset_.size()) {
       //LOG(ERROR) << "" << endl;
-      LOG(WARNING) <<"size of rgb and depth is not matched" << endl;
+      LOG(WARNING)<<"size of rgb and depth is not matched" << endl;
     }
   }
 
@@ -91,11 +88,10 @@ TUMDatasetReader::TUMDatasetReader(const ISLAMEnginePtr& engine,
 
 ISLAMNode::RunResult TUMDatasetReader::run() {
   if (cnt_ < rgb_dataset_.size()) {
-    ISLAMDataPtr data;
-    data.reset(
-        new DImage(path_to_dir_+"/"+rgb_dataset_[cnt_].filename,
-                   path_to_dir_+"/"+depth_dataset_[cnt_].filename));
-    engine_->setData("dimage", data);
+    ISLAMDataPtr dimage(
+        new DImage(dataset_dir_ + "/" + rgb_dataset_[cnt_].filename,
+                   dataset_dir_ + "/" + depth_dataset_[cnt_].filename));
+    engine_->setData("dimage", dimage);
     cnt_++;
     return RUN_SUCCESS;
   }

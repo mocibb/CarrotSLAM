@@ -53,9 +53,10 @@ class TUMDatasetReader : public ISLAMNode {
    the constructor of image
    @param img_path the path to image file
    */
-  TUMDatasetReader(const ISLAMEnginePtr& engine, const std::string& path_to_dir);
+  TUMDatasetReader(const ISLAMEnginePtr& engine, const std::string& name);
 
-  ~TUMDatasetReader(){};
+  ~TUMDatasetReader(){
+  };
 
   RunResult run();
 
@@ -68,8 +69,7 @@ class TUMDatasetReader : public ISLAMNode {
  protected:
   std::vector<TUMDatasetImageLine> rgb_dataset_;
   std::vector<TUMDatasetImageLine> depth_dataset_;
-  ISLAMEnginePtr engine_;
-  std::string path_to_dir_;
+  std::string dataset_dir_;
   long cnt_;
 
 };

@@ -2,12 +2,12 @@
 #define CARROT_SLAM_H_
 
 #include <string>
+#include <cstdlib>
 #include <vector>
 #include <memory>
 #include <map>
 #include <iostream>
-#include <glog/logging.h>
-#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include <pugixml.hpp>
 
 namespace carrotslam {
@@ -60,46 +60,39 @@ class ISLAMEngineContext {
   }
 
   /*! 获取指定名字的数据 */
-  template<typename T>
-  void getData(const std::string& name, std::shared_ptr<T>& data){}
+  virtual void getData(const std::string& name, ISLAMDataPtr& data) = 0;
 
-  /*! 保存指定名字的数据*/
-  template<typename T>
-  void setData(const std::string& name, const std::shared_ptr<T>& data){}
+  /*! 保存指定名字的数据 */
+  virtual void setData(const std::string& name, ISLAMDataPtr& data) = 0;
+
 };
 
 /*! \brief base class for SLAM pipeline.
  *
  */
 class ISLAMEngine {
+
  public:
-  ISLAMEngine(ISLAMEngineContextPtr& context)
-      : context_(context) {
-  }
   virtual ~ISLAMEngine() {
-    //DLOG(INFO) << "deconstructor of ISLAMEngine is called." << std::endl;
   }
+
   /*! 在run之前检查所有Node需要满足的运行条件 */
   virtual bool check() = 0;
   /*! 运行所有的Node算法 */
   virtual void run() = 0;
-
+  /*! 获取所有的Node */
+  virtual std::vector<ISLAMNodePtr> nodes() = 0;
+  /*! 追加运行Node */
+  virtual bool addNode(const ISLAMNodePtr& node) = 0;
+  /*! 删除运行Node */
+  virtual bool removeNode(const ISLAMNodePtr& node) = 0;
   /*! 获取指定名字的数据 */
-  template<typename T>
-  void getData(const std::string& name, std::shared_ptr<T>& data) {
-    context_->getData(name, data);
-  }
-
+  virtual void getData(const std::string& name, ISLAMDataPtr& data) = 0;
   /*! 保存指定名字的数据*/
-  template<typename T>
-  void setData(const std::string& name, std::shared_ptr<T>& data) {
-    context_->setData(name, data);
-  }
+  virtual void setData(const std::string& name, ISLAMDataPtr& data) = 0;
+  /*! 获取参数配置信息 */
+  virtual ISLAMEngineConfigPtr getConfig() = 0;
 
- protected:
-  ISLAMEngineConfigPtr config_;
-  ISLAMEngineContextPtr context_;
-  friend class ISLAMNode;
 };
 
 /*! \brief use to load parameter for each nodes.
@@ -109,11 +102,27 @@ class ISLAMEngineConfig {
  public:
   virtual ~ISLAMEngineConfig() {
   }
-  template<typename T>
-  T getValue(const std::string& xpath);
 
-  template<typename T>
-  T getValue(const std::string& xpath, T val);
+  /*! 获取所有的Node的名称 */
+  virtual std::vector<std::string> nodes() = 0;
+  /*! 获取的Node的配置参数 */
+  virtual std::string getValue(const std::string& nodeName, const std::string& xpath) = 0;
+
+};
+
+class XMLSLAMEngineConfig : public ISLAMEngineConfig {
+ public:
+  XMLSLAMEngineConfig(const std::string& xml_file);
+
+  virtual ~XMLSLAMEngineConfig() {
+  }
+
+  std::vector<std::string> nodes();
+
+  std::string getValue(const std::string& nodeName, const std::string& xpath);
+
+ protected:
+  pugi::xml_document doc_;
 };
 
 /*! \brief base class for each algorithm runs.
@@ -127,6 +136,12 @@ class ISLAMNode {
     RUN_NEXTROUND,
     RUN_FINISH
   };
+
+  ISLAMNode(const ISLAMEnginePtr& engine, const std::string& name)
+      : engine_(engine),
+        name_(name) {
+  }
+
 
   virtual ~ISLAMNode() {
   }
@@ -146,21 +161,53 @@ class ISLAMNode {
   }
 
   /*! 获取Nodes配置参数*/
-  template<typename T>
-  T getValue(const std::string& name) {
-    return engine_->config_->getValue<T>(name);
-  }
-
-  /*! 获取Nodes配置参数*/
-  template<typename T>
-  T getValue(const std::string& name, T val) {
-    return engine_->config_->getValue<T>(name, val);
+  std::string getValue(const std::string& attr) {
+    ISLAMEngineConfigPtr config_ = engine_->getConfig();
+    //FIXME: 如何能写成通用形式
+    return config_->getValue(name(), attr);
   }
 
  protected:
   ISLAMEnginePtr engine_;
   std::string name_;
 };
+
+/*!
+ * 获取node下的指定参数值，如果指定参数不存在抛出异常
+ */
+template<typename T>
+T getTypedValue(ISLAMNode* node, const std::string& attr) {
+  std::string str_val = node->getValue(attr);
+
+  if (str_val == "")
+    throw std::runtime_error("attribute " + attr + " not found!");
+
+  return boost::lexical_cast<T>(str_val);
+}
+
+/*!
+ * 获取node下的指定参数值，如果指定参数不存在用默认的代替
+ */
+template<typename T>
+T getTypedValue(ISLAMNode* node, const std::string& attr, T val) {
+  std::string str_val = node->getValue(attr);
+
+  if (str_val == "")
+    return val;
+
+  return boost::lexical_cast<T>(str_val);
+}
+
+/*!
+ * 获取指定类型的ISLAMData数据
+ */
+template<typename T>
+std::shared_ptr<T>
+getSLAMData(const ISLAMEnginePtr& engine, const std::string& name) {
+  ISLAMDataPtr data;
+  engine->getData(name, data);
+  return std::dynamic_pointer_cast<T>(data);
+}
 
 /*! \brief 简单的ISLAMEngineContext的实现，所有的数据都放到内存中。
  *         因为SLAM中数据结构很大，所以需要一个更复杂的ISLAMEngineContext的实现
@@ -171,95 +218,18 @@ class SetSLAMEngineContext : public ISLAMEngineContext {
   ~SetSLAMEngineContext() {
     //DLOG(INFO) << "deconstructor of SetSLAMEngineContext is called." << std::endl;
   }
+
   /*! 获取指定名字的数据 */
-  template<typename T>
-  void getData(const std::string& name, std::shared_ptr<T>& data) {
-    if (this->container_.count(name) > 0) {
-      //data.reset(this->container_[name].get()); this code is very buggy!!!!
-      data = this->container_[name];
-    } else {
-      data.reset();
-    }
-  }
+  void getData(const std::string& name, ISLAMDataPtr& data);
 
   /*! 保存指定名字的数据*/
-  template<typename T>
-  void setData(const std::string& name, const std::shared_ptr<T>& data) {
-    this->container_[name] = data;
-  }
+  void setData(const std::string& name, ISLAMDataPtr& data);
+
  protected:
   std::map<std::string, ISLAMDataPtr> container_;
 };
 
-class XMLSLAMEngineConfig : public ISLAMEngineConfig {
- public:
-  XMLSLAMEngineConfig(const std::string& xml_file) {
-    pugi::xml_parse_result result = doc_.load_file(xml_file.c_str());
-    if (result.status != pugi::status_ok) {
-      throw std::runtime_error(xml_file + " wrong xml!");
-    }
-    node_ = doc_;
-  }
 
-  void chroot(const ISLAMNodePtr& node) {
-    if (node.get() != nullptr) {
-      std::string xpath = "//node[@name='" + node->name() + "']";
-      node_ = doc_.select_node(xpath.c_str()).node();
-    } else{
-      node_ = doc_;
-    }
-  }
-
-  std::vector<std::string> nodes() {
-    std::vector<std::string> ret;
-    pugi::xml_object_range<pugi::xml_node_iterator> nodes = doc_.select_node("//nodes").node().children();
-    for (auto node : nodes ) {
-      ret.push_back(node.attribute("name").value());
-    }
-    return ret;
-  }
-
-  template<typename T>
-  T getValue(const std::string& name) {
-    std::string value = node_.child(name.c_str()).child_value();
-    if (std::is_same<T, int>::value) {
-      return std::atoi(value.c_str());
-    } else if (std::is_same<T, float>::value) {
-      return std::atof(value.c_str());
-    } else if (std::is_same<T, double>::value) {
-      return std::atof(value.c_str());
-    } else if (std::is_same<T, bool>::value){
-      return (value == "true" ? true : false);
-    } else if (std::is_same<T, std::string>::value){
-      return value;
-    }
-  }
-
-  template<typename T>
-  T getValue(const std::string& name, T val) {
-    pugi::xml_node nd = node_.child(name.c_str());
-    if (nd == 0) {
-      return val;
-    }
-    std::string value = nd.child_value();
-    if (std::is_same<T, int>::value) {
-      return std::atoi(value.c_str());
-    } else if (std::is_same<T, float>::value) {
-      return std::atof(value.c_str());
-    } else if (std::is_same<T, double>::value) {
-      return std::atof(value.c_str());
-    } else if (std::is_same<T, bool>::value){
-      return (value == "true" ? true : false);
-    } else if (std::is_same<T, std::string>::value){
-      return value;
-    }
-  }
-
- protected:
-  std::string root_;
-  pugi::xml_document doc_;
-  pugi::xml_node node_;
-};
 
 /*! \brief 顺序执行的SLAMEngine
  *         所有Node都按顺序执行，如果Node执行失败，从第二个开始。
@@ -267,16 +237,31 @@ class XMLSLAMEngineConfig : public ISLAMEngineConfig {
  */
 class SequenceSLAMEngine : public ISLAMEngine {
  public:
-  SequenceSLAMEngine(const std::string& file, ISLAMEngineContextPtr& context)
-      : ISLAMEngine(context) {
+  SequenceSLAMEngine(const std::string& file, ISLAMEngineContextPtr& context);
 
+  ~SequenceSLAMEngine() {
   }
   /*! 在run之前检查所有Node需要满足的运行条件 */
   bool check();
   /*! 运行所有的Node算法 */
   void run();
 
- private:
+  std::vector<ISLAMNodePtr> nodes();
+
+  bool addNode(const ISLAMNodePtr& node);
+
+  bool removeNode(const ISLAMNodePtr& node);
+
+  void getData(const std::string& name, ISLAMDataPtr& data);
+
+  void setData(const std::string& name, ISLAMDataPtr& data);
+
+
+ protected:
+  ISLAMEngineConfigPtr getConfig();
+
+  ISLAMEngineConfigPtr config_;
+  ISLAMEngineContextPtr context_;
   std::vector<ISLAMNodePtr> nodes_;
 };
 

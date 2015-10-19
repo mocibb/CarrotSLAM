@@ -5,25 +5,26 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
+#include <string>
 
 using namespace std;
 using namespace carrotslam;
 using namespace cv;
 long carrotslam::DImage::image_id_ = 0;
-int main() {
+
+int main(int argc, char* argv[]) {
+  if (argc < 2) {
+    return -1;
+  }
   ISLAMEngineContextPtr context_(new SetSLAMEngineContext());
-  ISLAMEnginePtr engine_(new SequenceSLAMEngine("", context_));
-  TUMDatasetReader reader(engine_, "/home/mocibb/dataset/tum/rgbd_dataset_freiburg1_floor");
-  reader.run();
+  //"../carrotslam/examples/ORB-SLAM/orbslam.xml"
+  ISLAMEnginePtr engine_(new SequenceSLAMEngine(argv[1], context_));
 
-  ISLAMDataPtr data;
-  context_->getData("dimage2", data);
-  if (data.get() != nullptr)
-    throw std::runtime_error("should be nullptr");
+  ISLAMNodePtr reader(new TUMDatasetReader(engine_, "tum_dataset_reader"));
+  engine_->addNode(reader);
+  reader->run();
 
-  context_->getData("dimage", data);
-
-  DImage* dimage = static_cast<DImage*>(data.get());
+  std::shared_ptr<DImage> dimage = getSLAMData<DImage>(engine_, "dimage");
   imshow("test", dimage->color_image());
   waitKey(0);
 
