@@ -27,7 +27,7 @@
 #ifndef TYPES_FRAME_H_
 #define TYPES_FRAME_H_
 #include <Eigen/Core>
-#include <sophus/se3.hpp>
+#include "sophus/se3.hpp"
 #include "core/carrot_slam.h"
 #include "types/pinhole_camera.h"
 
@@ -39,9 +39,11 @@ typedef std::shared_ptr<PinholeCamera> CameraPtr;
 typedef std::shared_ptr<Feature> FeaturePtr;
 class Frame : public ISLAMData {
  public:
+     Frame() : ISLAMData( 0 ) {}
+
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   Sophus::SE3f T_f_w; //!< 世界坐标到Frame坐标系变换  Transform (f)rame from (w)orld.
-  bool is_keyframe;   //!<
+  bool is_keyframe = false;   //!<
   std::vector< FeaturePtr > features; //!< 图像特征 image feature
   CameraPtr cam; //!< 相机模型 Camera model.
 };

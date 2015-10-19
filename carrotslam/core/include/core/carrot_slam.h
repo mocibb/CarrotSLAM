@@ -31,6 +31,7 @@ class ISLAMData {
   ISLAMData(long id)
       : id_(id) {
   }
+  ISLAMData(  ) : id_(0) {}
   virtual ~ISLAMData() {
     //DLOG(INFO) << "deconstructor of ISLAMData is called." << std::endl;
   }

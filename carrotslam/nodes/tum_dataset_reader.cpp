@@ -33,6 +33,8 @@
 #include <string>
 #include <opencv2/highgui/highgui.hpp>
 #include <boost/algorithm/string.hpp>
+
+
 #include <glog/logging.h>
 #include <boost/filesystem.hpp>
 
@@ -60,7 +62,7 @@ TUMDatasetReader::TUMDatasetReader(const ISLAMEnginePtr& engine, const string& n
   string rgb_line_, depth_line_;
 
   {
-    ScopeTime(LOG(INFO), "TUMDatasetReader reading dataset");
+    //ScopeTime(LOG(INFO), "TUMDatasetReader reading dataset");
     //ScopeTime(std::cerr, "TUMDatasetReader reading dataset");
     while (getline(rgb_txt_istream_, rgb_line_)) {
       if (rgb_line_[0] != '#') {

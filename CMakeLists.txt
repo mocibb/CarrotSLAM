@@ -13,7 +13,7 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake") # 添加本地CMake�
 INCLUDE(cmake/script_version_number.cmake REQUIRED)#添加项目版本号
 
 #C++编译器选项
-ADD_DEFINITIONS(-std=c++11)
+ADD_DEFINITIONS(-std=c++11 -DGLOG_NO_ABBREVIATED_SEVERITIES)
 
 #设置路径
 SET(CarrotSLAM_LIBS_ROOT "${CMAKE_SOURCE_DIR}/carrotslam" CACHE INTERNAL "") 
@@ -40,7 +40,7 @@ endif (ENABLE_SOLUTION_FOLDERS)
 FIND_PACKAGE(OpenCV REQUIRED) #通过CMake系统添加OpenCV
 FIND_PACKAGE(Boost REQUIRED COMPONENTS filesystem system date_time)  #通过CMake系统添加Boost
 FIND_PACKAGE(G2O REQUIRED) #通过CMake系统添加G2O
-#TODO 添加sophus
+INCLUDE_DIRECTORIES("3rdparty/sophus/include")#设置包含当前目录
 include(cmake/script_eigen.cmake REQUIRED)  #添加Eigen
 
 #TODO 构建静态库还是动态库，目前先设置为静态库，后期更改为默认动态库
@@ -56,7 +56,6 @@ FOREACH(_FILE ${_ALL_INCLUDE_DIRS})
 ENDFOREACH()
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 INCLUDE_DIRECTORIES("3rdparty/pugixml")
-INCLUDE_DIRECTORIES("3rdparty/sophus/include")
 LINK_DIRECTORIES("${CMAKE_BINARY_DIR}/lib")
 
 IF(MSVC)
@@ -72,6 +71,4 @@ SET( EXECUTABLE_OUTPUT_PATH ${CarrotSLAM_BINARY_DIR}/bin CACHE PATH "Output dire
 # ----------------------------------------------------------------------------
 ADD_SUBDIRECTORY(3rdparty)          # 第三方库的路径
 ADD_SUBDIRECTORY(carrotslam)        # 本地C++ lib的路径
-
-
 

@@ -32,6 +32,17 @@
 #include <glog/logging.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+// Eigen
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
+// OpenCV
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/nonfree/nonfree.hpp>
+#include <opencv2/core/eigen.hpp>
+
 namespace carrotslam {
 
 /** \brief Class to measure the time spent in a scope
@@ -85,6 +96,30 @@ class ScopeTime {
   std::string title_;
   std::ostream & out_;
 };
+
+// some small tools function
+
+/** \brief 从cv的旋转矩阵到Eigen::Isometry3d的转换
+ */
+inline Eigen::Isometry3d cvMat2Eigen( const cv::Mat& rvec, const cv::Mat& tvec )
+{
+    cv::Mat R;
+    cv::Rodrigues( rvec, R );
+    Eigen::Matrix3d r;
+    cv::cv2eigen( R, r );
+
+    Eigen::Isometry3d T = Eigen::Isometry3d::Identity();
+    Eigen::AngleAxisd angle(r);
+    Eigen::Translation<double,3> trans( tvec.at<double>(0,0), 
+            tvec.at<double>(0,1), tvec.at<double>(0,2));
+    T = angle; 
+    T(0,3)  = tvec.at<double>(0,0);
+    T(1,3)  = tvec.at<double>(0,1);
+    T(2,3)  = tvec.at<double>(0,2);
+
+    return T;
 }
+
+}//end of namespace
 
 #endif /* CORE_COMMON_H_ */
