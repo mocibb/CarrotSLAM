@@ -2,6 +2,7 @@
 #include <boost/algorithm/string.hpp>
 #include <glog/logging.h>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -13,10 +14,41 @@ SequenceSLAMEngine::SequenceSLAMEngine(const string& file, ISLAMEngineContextPtr
   config_ = ISLAMEngineConfigPtr(new XMLSLAMEngineConfig(file));
 }
 
+struct NodeSeq {
+  ISLAMNodePtr node;
+  int seq;
+
+  NodeSeq(ISLAMNodePtr& n, int s)
+      : node(n),
+        seq(s) {}
+
+  bool operator<(const NodeSeq& rhs) const {
+    return seq<rhs.seq;
+  }
+};
+
 bool SequenceSLAMEngine::check() {
   for (auto n : nodes_) {
     if (!n->check())
       return false;
+  }
+  //reorder
+  if (!is_ordered_) {
+    int seq;
+    vector<NodeSeq> nseq;
+    nseq.reserve(nodes().size());
+    for (auto n : nodes()) {
+      seq = config_->getSeq(n->name());
+      nseq.push_back(NodeSeq(n, seq));
+    }
+
+    sort(nseq.begin(), nseq.end());
+    nodes_.clear();
+    for (auto n : nseq) {
+      nodes_.push_back(n.node);
+    }
+
+    is_ordered_ = true;
   }
 
   return true;
@@ -75,7 +107,7 @@ void SequenceSLAMEngine::getData(const std::string& name, ISLAMDataPtr& data) {
   context_->getData(name, data);
 }
 
-void SequenceSLAMEngine::setData(const std::string& name, ISLAMDataPtr& data) {
+void SequenceSLAMEngine::setData(const std::string& name, const ISLAMDataPtr& data) {
   context_->setData(name, data);
 }
 
@@ -92,7 +124,7 @@ void SetSLAMEngineContext::getData(const string& name, ISLAMDataPtr& data) {
   }
 }
 
-void SetSLAMEngineContext::setData(const string& name, ISLAMDataPtr& data) {
+void SetSLAMEngineContext::setData(const string& name, const ISLAMDataPtr& data) {
   this->container_[name] = data;
 }
 
@@ -126,6 +158,13 @@ string XMLSLAMEngineConfig::getValue(const std::string& nodeName,
   }
   std::string value = nd.child_value();
   return value;
+}
+
+int XMLSLAMEngineConfig::getSeq(const std::string& nodeName) {
+  std::string xpath = "/engine/nodes/node[@name='" + nodeName + "']";
+  pugi::xpath_node nodes = doc_.select_node(xpath.c_str());
+  pugi::xml_node node = nodes.node();
+  return atoi(node.attribute("seq").value());
 }
 
 } // namespace carrotslam

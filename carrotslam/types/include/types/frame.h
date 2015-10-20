@@ -26,10 +26,13 @@
  */
 #ifndef TYPES_FRAME_H_
 #define TYPES_FRAME_H_
+
 #include <Eigen/Core>
-#include "sophus/se3.hpp"
+#include <sophus/se3.hpp>
+#include <opencv2/core/core.hpp>
 #include "core/carrot_slam.h"
 #include "types/pinhole_camera.h"
+#include "types/feature.h"
 
 namespace carrotslam {
 class PinholeCamera;
@@ -37,11 +40,14 @@ class Feature;
 
 typedef std::shared_ptr<PinholeCamera> CameraPtr;
 typedef std::shared_ptr<Feature> FeaturePtr;
+
 class Frame : public ISLAMData {
  public:
      Frame() : ISLAMData( 0 ) {}
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  std::vector<cv::Mat> img_pyramids; //!< 灰度图像金字塔 0是最精细的级别(无缩放的级别)
+  cv::Mat img;                       //!< 彩色图像
   Sophus::SE3f T_f_w; //!< 世界坐标到Frame坐标系变换  Transform (f)rame from (w)orld.
   bool is_keyframe = false;   //!<
   std::vector< FeaturePtr > features; //!< 图像特征 image feature

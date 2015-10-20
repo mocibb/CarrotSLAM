@@ -28,22 +28,22 @@
 #define TYPES_MAP_H_
 #include <Eigen/Core>
 #include "core/carrot_slam.h"
-#include "types/pinhole_camera.h"
+#include "types/frame.h"
+#include "types/point.h"
 
 namespace carrotslam {
 class Feature;
-class MapPoint;
 class Map;
 
 typedef std::shared_ptr<Feature> FeaturePtr;
-typedef std::shared_ptr<MapPoint> MapPointPtr;
+typedef std::shared_ptr<Point> PointPtr;
 typedef std::shared_ptr<Map> MapPtr;
 
 class Map : public ISLAMData {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  std::vector< FramePtr > key_frames; //!<
-  std::vector< MapPointPtr > map_points; //!<
+  std::vector< FramePtr > key_frames;  //!<
+  std::vector< PointPtr > points;      //!<
 };
 
 }  // namespace carrotslam

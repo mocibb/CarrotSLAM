@@ -26,6 +26,8 @@
  */
 
 #include "core/common.h"
+#include "types/image.h"
+#include "types/dimage.h"
 #include "nodes/orbslam_feature_extracting.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -42,8 +44,8 @@ using namespace std;
  the constructor of ORBSLAMFeatureExtracting
  @param using ORBextractor to get ORB features
  */
-ORBSLAMFeatureExtracting::ORBSLAMFeatureExtracting(const ISLAMEnginePtr& engine)
-    : engine_(engine) {
+ORBSLAMFeatureExtracting::ORBSLAMFeatureExtracting(const ISLAMEnginePtr& engine, const std::string& name)
+    : ISLAMNode(engine, name) {
   feature_number_ = getTypedValue<int>(this, "featureNumber", 1000);
   scale_factor_ = getTypedValue<float>(this, "scaleFactor", 1.2);
   pyramid_level_ = getTypedValue<int>(this, "pyramidLevel", 8);
@@ -62,7 +64,7 @@ ORBSLAMFeatureExtracting::ORBSLAMFeatureExtracting(const ISLAMEnginePtr& engine)
 }
 
 ISLAMNode::RunResult ORBSLAMFeatureExtracting::run() {
-  ScopeTime(LOG(INFO), "ORBSLAM Feature Extracting");
+  LOG(INFO) << "ORBSLAM Feature Extracting" << endl;
   ISLAMDataPtr data;
   engine_->getData("image", data);
   Mat img;
@@ -80,7 +82,7 @@ ISLAMNode::RunResult ORBSLAMFeatureExtracting::run() {
   vector<KeyPoint> keypoints;
   Mat descriptors;
   {
-    ScopeTime(DLOG(INFO), "extracting feature");
+    ScopeTime(LOG(INFO), "extracting feature");
     (*extractor_)(img, Mat(), keypoints, descriptors);
   }
 
@@ -92,7 +94,7 @@ ISLAMNode::RunResult ORBSLAMFeatureExtracting::run() {
     feat->angle = keypoints[i].angle;
     feat->frame = frame;
     feat->descriptor = descriptors.row(i);
-    feat->px << keypoints[i].pt[0], keypoints[i].pt[1];
+    feat->px << keypoints[i].pt.x, keypoints[i].pt.y;
     feat->half_size = 0;
     frame->features.push_back(feat);
   }

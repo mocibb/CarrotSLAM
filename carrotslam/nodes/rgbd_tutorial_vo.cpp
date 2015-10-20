@@ -12,15 +12,15 @@
 #include <boost/lexical_cast.hpp>
 using namespace carrotslam;
 
-RGBDTutorial_VO :: RGBDTutorial_VO( const ISLAMEnginePtr& engine )
-    //: engine_( engine )
+RGBDTutorial_VO :: RGBDTutorial_VO( const ISLAMEnginePtr& engine, const std::string& name )
+    : ISLAMNode(  engine, name )
 {
     // 读取xml中的参数
-    params_.detector_name   =   getValue<std::string> ("detector_name");
-    params_.descriptor_name =   getValue<std::string> ("descriptor_name");
-    params_.min_good_match  =   boost::lexical_cast<int> ( getValue<std::string> ("min_good_match") );
-    params_.min_inliers     =   boost::lexical_cast<int> ( getValue<std::string> ("min_inliers") );
-    params_.good_match_threshold =  boost::lexical_cast<double> ( getValue<std::string> ("good_match_threshold") );
+//    params_.detector_name   =   getValue<std::string> ("detector_name");
+//    params_.descriptor_name =   getValue<std::string> ("descriptor_name");
+//    params_.min_good_match  =   boost::lexical_cast<int> ( getValue<std::string> ("min_good_match") );
+//    params_.min_inliers     =   boost::lexical_cast<int> ( getValue<std::string> ("min_inliers") );
+//    params_.good_match_threshold =  boost::lexical_cast<double> ( getValue<std::string> ("good_match_threshold") );
 
     status_ = FIRST_FRAME;
 

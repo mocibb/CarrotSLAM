@@ -1,7 +1,7 @@
 /*!
  * Author: mocibb mocibb@163.com
  * Group:  CarrotSLAM https://github.com/mocibb/CarrotSLAM
- * Name:   oorbslam_feature_extracting.h
+ * Name:   orbslam_feature_extracting.h
  * Date:   2015.10.17
  * Func:   extract feature in image and put to frame data to context
  *
@@ -42,7 +42,7 @@ namespace carrotslam {
  */
 class ORBSLAMFeatureExtracting : public ISLAMNode {
  public:
-  ORBSLAMFeatureExtracting(const ISLAMEnginePtr& engine);
+  ORBSLAMFeatureExtracting(const ISLAMEnginePtr& engine, const std::string& name);
 
   ~ORBSLAMFeatureExtracting(){
 	  if (extractor_ != nullptr)
@@ -51,11 +51,17 @@ class ORBSLAMFeatureExtracting : public ISLAMNode {
 
   RunResult run();
 
-  inline bool check();
+  inline bool check() {
+    return true;
+  }
 
-  bool isStart();
+  bool isStart() {
+    return true;
+  }
 
-  bool isEnd();
+  bool isEnd() {
+    return true;
+  }
 
  private:
 

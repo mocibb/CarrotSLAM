@@ -82,7 +82,7 @@ public:
     /**
      * constructor
      */
-    RGBDTutorial_VO( const ISLAMEnginePtr& engine  );
+    RGBDTutorial_VO( const ISLAMEnginePtr& engine, const std::string& name );
 
     ~RGBDTutorial_VO(); 
 

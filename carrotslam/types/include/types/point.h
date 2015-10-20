@@ -29,6 +29,7 @@
 #include <Eigen/Core>
 #include <list>
 #include "core/carrot_slam.h"
+#include "types/feature.h"
 
 namespace carrotslam {
 /*! \brief patch object represents point and semi-dense features.
@@ -38,11 +39,15 @@ struct Patch {
   int half_size;
   int level;
 };
+class Feature;
+
 typedef std::shared_ptr<Patch> PatchPtr;
+typedef std::shared_ptr<Feature> FeaturePtr;
+
 /*! \brief
  *
  *
- *  MapPoint是不依赖与Frame的特征点
+ *  Point是依赖于Frame的特征点
  *
  */
 class Point : public ISLAMData {
@@ -56,7 +61,7 @@ class Point : public ISLAMData {
   };
   Eigen::Vector3f pos;                          //!< 位置
   Eigen::Vector3f pos_range[2];                 //!< 深度范围
-  std::list<FeaturePtr> observations;           //!<
+  std::list< FeaturePtr > observations;         //!<
   PointType type;                               //!<
 };
 
