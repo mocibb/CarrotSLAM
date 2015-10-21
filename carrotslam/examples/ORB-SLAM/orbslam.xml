@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<engine>
+    <nodes>
+        <node seq="1" name="tum_dataset_reader">
+            <datasetDir>/home/mocibb/dataset/tum/rgbd_dataset_freiburg1_floor</datasetDir>
+        </node>
+        <node seq="2" name="orbslam_feature_extracting">
+            <featureNumber>100</featureNumber>
+            <scaleFactor>1.2</scaleFactor>
+            <pyramidLevel>8</pyramidLevel>
+            <fastFeatureThreshold>20</fastFeatureThreshold>
+            <scoreType>1</scoreType>
+        </node>
+        <node seq="3" name="feature_viewer">
+	        <featureColor>#0000ff</featureColor>
+	        <pointColor>#00ff00</pointColor>
+	        <featureDrawThickness>1</featureDrawThickness>
+	        <pointDrawThickness>1</pointDrawThickness>
+	        <pointFontFace>8</pointFontFace>
+	        <pointFontScale>1</pointFontScale>
+        </node>
+        <!--
+        <node seq="2" name="orbslam_tracking">
+            <motionModel>true</motionModel>
+            <checkOrientation>true</checkOrientation>
+            <nnRatio>0.7</nnRatio>
+            <distThreshold>80</distThreshold>
+            <histogramLength>20</histogramLength>
+        </node>
+        -->
+    </nodes>
+</engine>

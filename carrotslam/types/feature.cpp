@@ -1,9 +1,9 @@
-﻿/*!
+/*!
  * Author: mocibb mocibb@163.com
  * Group:  CarrotSLAM https://github.com/mocibb/CarrotSLAM
- * Name:   tum_dataset_reader.h
- * Date:   2015.09.30
- * Func:   tum dataset reader
+ * Name:   feature.cpp
+ * Date:   2015.10.20
+ * Func:
  *
  *
  * The MIT License (MIT)
@@ -24,55 +24,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef NODES_TUM_DATASET_READER_H_
-#define NODES_TUM_DATASET_READER_H_
 
-#include <core/carrot_slam.h>
-#include <vector>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include "types/feature.h"
 
 namespace carrotslam {
-/*! \brief image object that keep id
- *
- *
- *  Internally use cv::Mat of opencv for holding image object
- */
-class TUMDatasetReader : public ISLAMNode {
- private:
-  struct TUMDatasetImageLine {
-    TUMDatasetImageLine(const std::string& ts, const std::string& fn)
-        : timestamp(ts),
-          filename(fn) {
-    }
-    std::string timestamp;
-    std::string filename;
-  };
- public:
-  /*!
-   the constructor of image
-   @param img_path the path to image file
-   */
-  TUMDatasetReader(const ISLAMEnginePtr& engine, const std::string& name);
 
-  ~TUMDatasetReader(){
-  };
+std::vector<float> Feature::scale_factors;
+std::vector<float> Feature::inv_level_sigma2;
 
-  RunResult run();
+}  // namespace carrotslam
 
-  inline bool check();
-
-  bool isStart();
-
-  bool isEnd();
-
- protected:
-  std::vector<TUMDatasetImageLine> rgb_dataset_;
-  std::vector<TUMDatasetImageLine> depth_dataset_;
-  std::string dataset_dir_;
-  long cnt_;
-
-};
-}   // namespace carrotslam
-
-#endif /* NODES_TUM_DATASET_READER_H_ */

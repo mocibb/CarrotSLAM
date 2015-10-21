@@ -5,7 +5,7 @@
  *      Author: cforster
  */
 
-#include "pinhole_camera.h"
+#include "types/pinhole_camera.h"
 #include <stdio.h>
 #include <iostream>
 #include <fstream>

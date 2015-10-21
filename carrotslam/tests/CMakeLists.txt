@@ -12,7 +12,9 @@ SET(LINKLIBS libcarrotslam_core.a
 libcarrotslam_nodes.a
 #libcarrotslam_core${CMAKE_DEBUG_POSTFIX}.a
 #libcarrotslam_nodes${CMAKE_DEBUG_POSTFIX}.a
-libglog.so)
+libpugixml.a
+libglog.so
+libgflags.so)
 endif(MSVC)
 
 ADD_EXECUTABLE(carrotslam_tests tum_dataset_reader_test.cpp)

@@ -24,12 +24,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TYPES_IMAGE_H_
-#define TYPES_IMAGE_H_
+#ifndef TYPES_DIMAGE_H_
+#define TYPES_DIMAGE_H_
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "core/carrot_slam.h"
+#include <glog/logging.h>
 
 namespace carrotslam {
 /*! \brief rgbd image object that keep id
@@ -102,4 +103,4 @@ class DImage : public ISLAMData {
 };
 }   // namespace carrotslam
 
-#endif /* TYPES_IMAGE_H_ */
+#endif /* TYPES_DIMAGE_H_ */

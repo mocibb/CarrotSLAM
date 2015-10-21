@@ -1,9 +1,9 @@
-﻿/*!
+/*!
  * Author: mocibb mocibb@163.com
  * Group:  CarrotSLAM https://github.com/mocibb/CarrotSLAM
- * Name:   tum_dataset_reader.h
- * Date:   2015.09.30
- * Func:   tum dataset reader
+ * Name:   covisible_keyframe.cpp
+ * Date:   2015.10.11
+ * Func:
  *
  *
  * The MIT License (MIT)
@@ -24,55 +24,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef NODES_TUM_DATASET_READER_H_
-#define NODES_TUM_DATASET_READER_H_
+#include <Eigen/Core>
+#include <sophus/se3.hpp>
+#include "core/carrot_slam.h"
+#include "types/pinhole_camera.h"
+#include "types/covisible_keyframe.h"
+#include <set>
 
-#include <core/carrot_slam.h>
-#include <vector>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
 
 namespace carrotslam {
-/*! \brief image object that keep id
- *
- *
- *  Internally use cv::Mat of opencv for holding image object
- */
-class TUMDatasetReader : public ISLAMNode {
- private:
-  struct TUMDatasetImageLine {
-    TUMDatasetImageLine(const std::string& ts, const std::string& fn)
-        : timestamp(ts),
-          filename(fn) {
+
+void CovisibleKeyFrame::add(const CovisibleKeyFramePtr& frame, float weight) {
+  CovisibleEdge edge;
+  edge.vertex = frame;
+  edge.weight = weight;
+  edges_.insert(edge);
+}
+
+void CovisibleKeyFrame::remove(const CovisibleKeyFramePtr& frame) {
+  for (auto e : edges_) {
+    if (e.vertex->id_ == frame->id_) {
+      edges_.erase(e);
+      break;
     }
-    std::string timestamp;
-    std::string filename;
-  };
- public:
-  /*!
-   the constructor of image
-   @param img_path the path to image file
-   */
-  TUMDatasetReader(const ISLAMEnginePtr& engine, const std::string& name);
+  }
+}
 
-  ~TUMDatasetReader(){
-  };
 
-  RunResult run();
+std::vector<CovisibleKeyFramePtr> CovisibleKeyFrame::getCovisibleKeyFrames() {
+  std::vector<CovisibleKeyFramePtr> frames;
 
-  inline bool check();
+  for (auto e : edges_) {
+    frames.push_back(e.vertex);
+  }
 
-  bool isStart();
+  return frames;
+}
 
-  bool isEnd();
+std::vector<CovisibleKeyFramePtr> CovisibleKeyFrame::getBestCovisibilityKeyFrames(const int &N){
+  std::vector<CovisibleKeyFramePtr> frames;
 
- protected:
-  std::vector<TUMDatasetImageLine> rgb_dataset_;
-  std::vector<TUMDatasetImageLine> depth_dataset_;
-  std::string dataset_dir_;
-  long cnt_;
+  for (auto e : edges_) {
+    frames.push_back(e.vertex);
+    if (frames.size() >= N)
+      break;
+  }
 
-};
-}   // namespace carrotslam
+  return frames;
+}
+}  // namespace carrotslam
 
-#endif /* NODES_TUM_DATASET_READER_H_ */

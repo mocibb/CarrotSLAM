@@ -1,9 +1,9 @@
-﻿/*!
+/*!
  * Author: mocibb mocibb@163.com
  * Group:  CarrotSLAM https://github.com/mocibb/CarrotSLAM
- * Name:   tum_dataset_reader.h
- * Date:   2015.09.30
- * Func:   tum dataset reader
+ * Name:   orbslam_feature_extracting.h
+ * Date:   2015.10.17
+ * Func:   extract feature in image and put to frame data to context
  *
  *
  * The MIT License (MIT)
@@ -24,55 +24,56 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef NODES_TUM_DATASET_READER_H_
-#define NODES_TUM_DATASET_READER_H_
+#ifndef NODES_ORBSLAM_FEATURE_EXTRACTING_H_
+#define NODES_ORBSLAM_FEATURE_EXTRACTING_H_
 
-#include <core/carrot_slam.h>
 #include <vector>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include <set>
+#include "core/carrot_slam.h"
+#include "types/frame.h"
+#include "types/feature.h"
+#include "types/map.h"
+#include "types/point.h"
+#include "nodes/ORBextractor.h"
 
 namespace carrotslam {
-/*! \brief image object that keep id
+/*! \brief using ORBextractor to get ORB features
  *
- *
- *  Internally use cv::Mat of opencv for holding image object
  */
-class TUMDatasetReader : public ISLAMNode {
- private:
-  struct TUMDatasetImageLine {
-    TUMDatasetImageLine(const std::string& ts, const std::string& fn)
-        : timestamp(ts),
-          filename(fn) {
-    }
-    std::string timestamp;
-    std::string filename;
-  };
+class ORBSLAMFeatureExtracting : public ISLAMNode {
  public:
-  /*!
-   the constructor of image
-   @param img_path the path to image file
-   */
-  TUMDatasetReader(const ISLAMEnginePtr& engine, const std::string& name);
+  ORBSLAMFeatureExtracting(const ISLAMEnginePtr& engine, const std::string& name);
 
-  ~TUMDatasetReader(){
+  ~ORBSLAMFeatureExtracting(){
+	  if (extractor_ != nullptr)
+		  delete extractor_;
   };
 
   RunResult run();
 
-  inline bool check();
+  inline bool check() {
+    return true;
+  }
 
-  bool isStart();
+  bool isStart() {
+    return true;
+  }
 
-  bool isEnd();
+  bool isEnd() {
+    return true;
+  }
 
- protected:
-  std::vector<TUMDatasetImageLine> rgb_dataset_;
-  std::vector<TUMDatasetImageLine> depth_dataset_;
-  std::string dataset_dir_;
-  long cnt_;
+ private:
+
+  ORB_SLAM::ORBextractor* extractor_;
+
+  int feature_number_;
+  float scale_factor_;
+  int pyramid_level_;
+  float fast_feature_threshold_;
+  int score_type_;
 
 };
 }   // namespace carrotslam
 
-#endif /* NODES_TUM_DATASET_READER_H_ */
+#endif /* NODES_ORBSLAM_FEATURE_EXTRACTING_H_ */
