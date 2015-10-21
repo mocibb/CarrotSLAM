@@ -64,7 +64,7 @@ class ISLAMEngineContext {
   virtual void getData(const std::string& name, ISLAMDataPtr& data) = 0;
 
   /*! 保存指定名字的数据 */
-  virtual void setData(const std::string& name, ISLAMDataPtr& data) = 0;
+  virtual void setData(const std::string& name, const ISLAMDataPtr& data) = 0;
 
 };
 
@@ -90,7 +90,7 @@ class ISLAMEngine {
   /*! 获取指定名字的数据 */
   virtual void getData(const std::string& name, ISLAMDataPtr& data) = 0;
   /*! 保存指定名字的数据*/
-  virtual void setData(const std::string& name, ISLAMDataPtr& data) = 0;
+  virtual void setData(const std::string& name, const ISLAMDataPtr& data) = 0;
   /*! 获取参数配置信息 */
   virtual ISLAMEngineConfigPtr getConfig() = 0;
 
@@ -108,7 +108,8 @@ class ISLAMEngineConfig {
   virtual std::vector<std::string> nodes() = 0;
   /*! 获取的Node的配置参数 */
   virtual std::string getValue(const std::string& nodeName, const std::string& xpath) = 0;
-
+  /*! 获取的Node的顺序 */
+  virtual int getSeq(const std::string& nodeName) = 0;
 };
 
 class XMLSLAMEngineConfig : public ISLAMEngineConfig {
@@ -121,6 +122,8 @@ class XMLSLAMEngineConfig : public ISLAMEngineConfig {
   std::vector<std::string> nodes();
 
   std::string getValue(const std::string& nodeName, const std::string& xpath);
+
+  int getSeq(const std::string& nodeName);
 
  protected:
   pugi::xml_document doc_;
@@ -233,7 +236,7 @@ class SetSLAMEngineContext : public ISLAMEngineContext {
   void getData(const std::string& name, ISLAMDataPtr& data);
 
   /*! 保存指定名字的数据*/
-  void setData(const std::string& name, ISLAMDataPtr& data);
+  void setData(const std::string& name, const ISLAMDataPtr& data);
 
  protected:
   std::map<std::string, ISLAMDataPtr> container_;
@@ -264,7 +267,7 @@ class SequenceSLAMEngine : public ISLAMEngine {
 
   void getData(const std::string& name, ISLAMDataPtr& data);
 
-  void setData(const std::string& name, ISLAMDataPtr& data);
+  void setData(const std::string& name, const ISLAMDataPtr& data);
 
 
  protected:
@@ -273,6 +276,7 @@ class SequenceSLAMEngine : public ISLAMEngine {
   ISLAMEngineConfigPtr config_;
   ISLAMEngineContextPtr context_;
   std::vector<ISLAMNodePtr> nodes_;
+  bool is_ordered_ = false;
 };
 
 
