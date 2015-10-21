@@ -32,13 +32,13 @@ RGBDTutorial_VO :: RGBDTutorial_VO( const ISLAMEnginePtr& engine )
 }
 
 
-std::shared_ptr<Frame> RGBDTutorial_VO::extractFeatures()
+std::shared_ptr<Frame> RGBDTutorial_VO::extractFeatures( const std::shared_ptr<DImage> & image )
 {
     std::shared_ptr<Frame> f ( new Frame() ); 
     std::vector< cv::KeyPoint > kp; 
-    detector_ -> detect( last_pose_->color_image(), kp );
+    detector_ -> detect( image->color_image(), kp );
     cv::Mat desp;
-    descriptor_ -> compute( last_pose_->color_image(), kp, desp );
+    descriptor_ -> compute( image->color_image(), kp, desp );
 
     // 提出出来的东西 转换至Frame
     for ( size_t i=0; i<kp.size(); i++ )
@@ -47,7 +47,6 @@ std::shared_ptr<Frame> RGBDTutorial_VO::extractFeatures()
         feature->descriptor = std::move( desp.row(i) );
         f->features.push_back( feature );
     }
-
     return f;
 }
 
@@ -94,6 +93,33 @@ void RGBDTutorial_VO::compute()
 {
     ISLAMDataPtr new_data;
     engine_->getData( "dimage", new_data );
+    std::shared_ptr<Frame> new_frame = extractFeatures( new_data );
     
-    // 提取new_data的特征
+    // 匹配特征
+    std::vector<cv::DMatch> matches = match( this_frame_, new_frame );
+
+}
+
+std::vector<cv::DMatch> && RGBDTutorial_VO::match( const std::shared_ptr<Frame>& p1, const std::shared_ptr<Frame>& p2 )
+{
+    static cv::FlannBasedMatcher matcher; 
+    // 调用opencv::FlannBasedMatcher进行匹配
+    cv::Mat feature1( p1->features.size(), p1->features[0]->descriptor.cols, CV_32F ); 
+    cv::Mat feature2( p2->features.size(), p2->features[0]->descriptor.cols, CV_32F ); 
+
+    for ( int i=0; i<p1->features.size(); i++ )
+    {
+        cv::Mat& d = p1->features[i]->descriptor;
+        d.row(0).copyTo( feature1.row(i) );
+    }
+    
+    for ( int i=0; i<p2->features.size(); i++ )
+    {
+        cv::Mat& d = p2->features[i]->descriptor;
+        d.row(0).copyTo( feature2.row(i) );
+    }
+
+    std::vector<cv::DMatch> matches;
+    matcher.match( feature1, feature2, matches );
+    return matches;
 }

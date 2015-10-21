@@ -106,7 +106,7 @@ protected:
         ISLAMDataPtr data; 
         engine_->getData( "dimage", data  );
         last_pose_ = std::dynamic_pointer_cast< DImage > (data);
-        this_frame_ = extractFeatures(); 
+        this_frame_ = extractFeatures( last_pose_ ); 
         status_ = RUNNING;
     }
 
@@ -114,7 +114,10 @@ protected:
     void compute(); 
 
     // \brief 提取last_pose里的特征，使用Frame接口
-    std::shared_ptr<Frame> extractFeatures(); 
+    std::shared_ptr<Frame> extractFeatures( const std::shared_ptr<DImage> & image ); 
+
+    // \brief 匹配特征
+    std::vector<cv::DMatch> && match( const std::shared_ptr<Frame>& p1, const std::shared_ptr<Frame>& p2 );
 
 protected:
     // 数据成员

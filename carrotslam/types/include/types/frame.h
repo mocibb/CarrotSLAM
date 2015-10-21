@@ -41,11 +41,11 @@ class Frame : public ISLAMData {
  public:
      Frame() : ISLAMData( 0 ) {}
 
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  Sophus::SE3f T_f_w; //!< 世界坐标到Frame坐标系变换  Transform (f)rame from (w)orld.
-  bool is_keyframe = false;   //!<
-  std::vector< FeaturePtr > features; //!< 图像特征 image feature
-  CameraPtr cam; //!< 相机模型 Camera model.
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    Sophus::SE3f T_f_w; //!< 世界坐标到Frame坐标系变换  Transform (f)rame from (w)orld.
+    bool is_keyframe = false;   //!<
+    std::vector< FeaturePtr > features; //!< 图像特征 image feature
+    CameraPtr cam; //!< 相机模型 Camera model.
 };
 
 }  // namespace carrotslam
