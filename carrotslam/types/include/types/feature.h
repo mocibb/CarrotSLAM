@@ -41,6 +41,7 @@ namespace carrotslam {
 
 class Point;
 class Feature;
+class Frame;
 
 typedef std::shared_ptr<Point> PointPtr;
 typedef std::shared_ptr<Frame> FramePtr;

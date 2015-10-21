@@ -10,6 +10,8 @@
 #include "types/feature.h"
 
 #include <boost/lexical_cast.hpp>
+
+#include <glog/logging.h>
 using namespace carrotslam;
 
 RGBDTutorial_VO :: RGBDTutorial_VO( const ISLAMEnginePtr& engine, const std::string& name )
@@ -76,27 +78,30 @@ ISLAMNode::RunResult RGBDTutorial_VO::run()
     else if (status_ == RUNNING )
     {
         // 尝试将当前帧与上一帧进行匹配
-        try
-        {
-            compute();
-        }
-        catch( ... )
-        {
-            
-        }
+        ComputeStatus status = compute();
     }
 
     return RUN_SUCCESS; 
 }
 
-void RGBDTutorial_VO::compute() 
+RGBDTutorial_VO::ComputeStatus RGBDTutorial_VO::compute() 
 {
-    ISLAMDataPtr new_data;
+    ISLAMDataPtr new_data; //新帧的RGBD数据
     engine_->getData( "dimage", new_data );
-    std::shared_ptr<Frame> new_frame = extractFeatures( new_data );
+    std::shared_ptr<Frame> new_frame = extractFeatures( std::dynamic_pointer_cast<DImage> (new_data) ); //新一帧的Frame
     
     // 匹配特征
     std::vector<cv::DMatch> matches = match( this_frame_, new_frame );
+
+    if ( matches.size() < this->params_.min_good_match )
+    {
+        LOG(WARNING) << "Good match is too few. Aborting this frame";
+        return TOO_FEW_FEATURES;
+    }
+
+    // 计算ransac icp
+
+    return OK;
 
 }
 
@@ -121,5 +126,39 @@ std::vector<cv::DMatch> && RGBDTutorial_VO::match( const std::shared_ptr<Frame>&
 
     std::vector<cv::DMatch> matches;
     matcher.match( feature1, feature2, matches );
-    return matches;
+
+    //筛选
+    std::vector< cv::DMatch > goodMatches; 
+    auto min_ele = std::min_element( matches.begin(), matches.end(), 
+            [] (const cv::DMatch& m1, const cv::DMatch& m2 )
+            { return m1.distance<m2.distance; });
+    auto isGoodMatch = [min_ele, this] (const cv::DMatch& m) 
+        {return m.distance < min_ele->distance * this->params_.good_match_threshold; } ; 
+    auto iter = matches.begin();
+    while ( true )
+    {
+        iter = find_if( iter, matches.end(), isGoodMatch );
+        if ( iter != matches.end() )
+            break;
+        goodMatches.push_back( *iter );
+        iter++;
+    }
+
+    LOG(INFO)<<"good matches: "<<goodMatches.size()<<std::endl;
+    
+    return std::move( goodMatches );
+}
+
+int RGBDTutorial_VO::solveRgbdPnP(
+    std::shared_ptr<Frame> frame1, std::shared_ptr<DImage> image1, 
+    std::shared_ptr<Frame> frame2, std::shared_ptr<DImage> image2, 
+    const std::vector<cv::DMatch>& matches )
+{
+    std::vector< cv::Point3f > pts_obj; //三维点
+    std::vector< cv::Point2f > pts_img; //二维点
+
+    for ( auto m:matches )
+    {
+        Eigen::Vector2f& p = frame1->features[ m.queryIdx ]->px; 
+    }
 }
