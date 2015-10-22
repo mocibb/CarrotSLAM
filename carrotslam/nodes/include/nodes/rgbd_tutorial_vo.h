@@ -98,6 +98,11 @@ public:
     // 自有函数
 protected:
 
+    typedef enum  { 
+        OK=0, TOO_FEW_FEATURES, 
+    }ComputeStatus;
+
+
     /**
      * \brief 读取第一帧的数据
      */
@@ -106,16 +111,26 @@ protected:
         ISLAMDataPtr data; 
         engine_->getData( "dimage", data  );
         last_pose_ = std::dynamic_pointer_cast< DImage > (data);
-        this_frame_ = extractFeatures(); 
+        this_frame_ = extractFeatures( last_pose_ ); 
         status_ = RUNNING;
     }
 
     // \brief 计算与last_pose_的相对位姿并输出结果
-    void compute(); 
+    RGBDTutorial_VO::ComputeStatus compute(); 
 
     // \brief 提取last_pose里的特征，使用Frame接口
-    std::shared_ptr<Frame> extractFeatures(); 
+    std::shared_ptr<Frame> extractFeatures( const std::shared_ptr<DImage> & image ); 
 
+    // \brief 匹配特征
+    std::vector<cv::DMatch> && match( const std::shared_ptr<Frame>& p1, const std::shared_ptr<Frame>& p2 );
+
+    // \brief 计算ransac pnp
+    // \param 两帧各自的frame(含特征)和rgbd原图(计算特征位置)
+    // \param 特征匹配关系
+    int solveRgbdPnP( 
+            std::shared_ptr<Frame> frame1, std::shared_ptr<DImage> image1, 
+            std::shared_ptr<Frame> frame2, std::shared_ptr<DImage> image2, 
+            const std::vector<cv::DMatch>& matches );
 protected:
     // 数据成员
     std::shared_ptr<DImage>     last_pose_;     // 上一帧图像
