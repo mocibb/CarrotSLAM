@@ -5,6 +5,7 @@ ADD_LIBRARY(carrotslam_nodes
   orbslam_feature_extracting.cpp
   feature_viewer.cpp
   ORBextractor.cc
+  LoopClosing.cc
 )
 
 #使用glog的静态库，添加预处理宏定义
