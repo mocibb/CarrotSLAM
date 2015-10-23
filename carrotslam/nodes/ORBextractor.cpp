@@ -721,7 +721,8 @@ void ORBextractor::operator()( InputArray _image, InputArray _mask, vector<KeyPo
         return;
 
     Mat image = _image.getMat(), mask = _mask.getMat();
-    assert(image.type() == CV_8UC1 );
+    if (image.type() == CV_8UC3)
+		cv::cvtColor(image, image, CV_BGR2GRAY);
 
     // Pre-compute the scale pyramids
     ComputePyramid(image, mask);
