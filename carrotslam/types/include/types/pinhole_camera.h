@@ -51,6 +51,9 @@ class PinholeCamera : public CameraBase {
   virtual Eigen::Vector3d
   cam2world(const Eigen::Vector2d& px) const;
 
+  virtual Eigen::Vector3d
+  cam2world(const Eigen::Vector2d& uv, const short& depth) const;
+
   virtual Eigen::Vector2d
   world2cam(const Eigen::Vector3d& xyz_c) const;
 
@@ -151,6 +154,15 @@ class PinholeCamera : public CameraBase {
     return false;
   }
 
+  cv::Mat getCvMat() const {
+      double camera_matrix[3][3] = 
+      {
+          {fx_, 0, cx_}, 
+          {0, fy_, cy_},
+          {0, 0, 1}
+      };
+      return cv::Mat(3,3,CV64F, camera_matrix);
+  }
 };
 
 } // namespace carrotslam

@@ -1,6 +1,6 @@
 #!/bin/bash
 builddir="./build/"
-if [! -x "$builddir"]; then
+if [ ! -x "$builddir" ]; then
     mkdir "$builddir"
 fi
 cd build;

@@ -152,7 +152,8 @@ std::vector<cv::DMatch> && RGBDTutorial_VO::match( const std::shared_ptr<Frame>&
 int RGBDTutorial_VO::solveRgbdPnP(
     std::shared_ptr<Frame> frame1, std::shared_ptr<DImage> image1, 
     std::shared_ptr<Frame> frame2, std::shared_ptr<DImage> image2, 
-    const std::vector<cv::DMatch>& matches )
+    const std::vector<cv::DMatch>& matches, 
+    Sophus::SE3f& T )
 {
     std::vector< cv::Point3f > pts_obj; //三维点
     std::vector< cv::Point2f > pts_img; //二维点
@@ -160,5 +161,34 @@ int RGBDTutorial_VO::solveRgbdPnP(
     for ( auto m:matches )
     {
         Eigen::Vector2f& p = frame1->features[ m.queryIdx ]->px; 
+        ushort d = image1->depth_image_.ptr<ushort> ( int(p[1]) ) [ int(p[0]) ];
+        if (d == 0)         //深度图中该像素无读数
+            continue;
+        // 将p和d转换至3D空间坐标
+        Eigen::Vector3d point3d = frame1->cam->cam2world( p, d );
+        pts_obj.push_back( cv::Point3f( point3d[0], point3d[1] point3d[2] ) );
+        pts_img.push_back( frame2->features[ m.trainIdx ]->px );
     }
+    if (pts_obj.size() ==0 || pts_img.size()==0 )
+    {
+        LOG(WARNING)<<"RGBDPNP::Not enough points"<<std::endl;
+        return -1;
+    }
+    
+    // 构建Camera矩阵
+    cv::Mat rvec, tvec, inliers;
+    cv::solvePnPRansac( pts_obj, pts_img, frame1->cam->getCvMat(), 
+            rvec, tvec, false, 100, 1.0 ,100, inliers );
+
+    if ( inliers.rows < this->params_.min_inliers )
+    {
+        LOG(WARNING)<<"RGBDPNP::Not enough inliers"<<std<<endl;
+        return -1;
+    }
+    
+    Eigen::Isometry3d T = cvMat2Eigen( rvec, tvec );
+    Sophus::SE3f T ( T.rotation(),  );
+
+    return 0;
+    //
 }

@@ -110,8 +110,8 @@ inline Eigen::Isometry3d cvMat2Eigen( const cv::Mat& rvec, const cv::Mat& tvec )
 
     Eigen::Isometry3d T = Eigen::Isometry3d::Identity();
     Eigen::AngleAxisd angle(r);
-    Eigen::Translation<double,3> trans( tvec.at<double>(0,0), 
-            tvec.at<double>(0,1), tvec.at<double>(0,2));
+    //Eigen::Translation<double,3> trans( tvec.at<double>(0,0), 
+    //        tvec.at<double>(0,1), tvec.at<double>(0,2));
     T = angle; 
     T(0,3)  = tvec.at<double>(0,0);
     T(1,3)  = tvec.at<double>(0,1);

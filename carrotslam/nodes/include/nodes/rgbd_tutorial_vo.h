@@ -126,11 +126,14 @@ protected:
 
     // \brief 计算ransac pnp
     // \param 两帧各自的frame(含特征)和rgbd原图(计算特征位置)
-    // \param 特征匹配关系
+    // \param matches: 特征匹配关系
+    // \param T: 两帧的相对运动
+    // 返回值 0 表示成功，其他均表示失败
     int solveRgbdPnP( 
             std::shared_ptr<Frame> frame1, std::shared_ptr<DImage> image1, 
             std::shared_ptr<Frame> frame2, std::shared_ptr<DImage> image2, 
-            const std::vector<cv::DMatch>& matches );
+            const std::vector<cv::DMatch>& matches, 
+            Sophus::SE3f& T );
 protected:
     // 数据成员
     std::shared_ptr<DImage>     last_pose_;     // 上一帧图像
