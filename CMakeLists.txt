@@ -11,7 +11,9 @@ PROJECT (CarrotSLAM)#设定工程名称
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake") # 添加本地CMake脚本目录
 
 INCLUDE(cmake/script_version_number.cmake REQUIRED)#添加项目版本号
-
+include(cmake/FilterFileLists.cmake REQUIRED)#添加有用的宏
+INCLUDE(cmake/DeclareCarrotSLAMLib.cmake REQUIRED)#自动添加lib文件
+include(cmake/DeclareAppDependencies.cmake REQUIRED)#自动给出app的依赖lib
 #C++编译器选项
 ADD_DEFINITIONS(-std=c++11 -DGLOG_NO_ABBREVIATED_SEVERITIES)
 
@@ -42,7 +44,7 @@ FIND_PACKAGE(Boost REQUIRED COMPONENTS filesystem system date_time)  #通过CMak
 FIND_PACKAGE(G2O REQUIRED) #通过CMake系统添加G2O
 INCLUDE_DIRECTORIES("3rdparty/sophus/include")#设置包含当前目录
 include(cmake/script_eigen.cmake REQUIRED)  #添加Eigen
-
+include(cmake/script_gtest.cmake REQUIRED)       # Unit testing lib
 #TODO 构建静态库还是动态库，目前先设置为静态库，后期更改为默认动态库
 
 
@@ -72,3 +74,7 @@ SET( EXECUTABLE_OUTPUT_PATH ${CarrotSLAM_BINARY_DIR}/bin CACHE PATH "Output dire
 ADD_SUBDIRECTORY(3rdparty)          # 第三方库的路径
 ADD_SUBDIRECTORY(carrotslam)        # 本地C++ lib的路径
 
+SET( BUILD_TESTING ON CACHE BOOL "Build CarrotSLAM tests")
+IF( BUILD_TESTING)
+	add_subdirectory(tests)  # Build my tests
+ENDIF( BUILD_TESTING)

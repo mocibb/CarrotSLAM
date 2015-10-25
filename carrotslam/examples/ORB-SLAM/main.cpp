@@ -14,7 +14,7 @@ using namespace cv;
 long carrotslam::DImage::image_id_ = 0;
 int main() {
   ISLAMEngineContextPtr context(new SetSLAMEngineContext());
-  ISLAMEnginePtr engine(new SequenceSLAMEngine("/home/mocibb/works/CarrotSLAM/carrotslam/examples/ORB-SLAM/orbslam.xml", context));
+  ISLAMEnginePtr engine(new SequenceSLAMEngine(std::string(THIS_SOURCE_DIR) +"/orbslam.xml", context));
   engine->addNode(ISLAMNodePtr(new TUMDatasetReader(engine, "tum_dataset_reader")));
   engine->addNode(ISLAMNodePtr(new ORBSLAMFeatureExtracting(engine, "orbslam_feature_extracting")));
   engine->addNode(ISLAMNodePtr(new FeatureViewer(engine, "feature_viewer")));
