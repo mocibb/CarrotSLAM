@@ -43,6 +43,8 @@
 #include <opencv2/nonfree/nonfree.hpp>
 #include <opencv2/core/eigen.hpp>
 
+// Sophus
+#include <sophus/se3.hpp>
 namespace carrotslam {
 
 /** \brief Class to measure the time spent in a scope
@@ -118,6 +120,24 @@ inline Eigen::Isometry3d cvMat2Eigen( const cv::Mat& rvec, const cv::Mat& tvec )
     T(2,3)  = tvec.at<double>(0,2);
 
     return T;
+}
+
+/** \brief convert from cv::Mat tvec and rvec to Sophus::SE3f 
+ */
+inline Sophus::SE3f     cvMat2SophusSE3f( const cv::Mat& rvec, const cv::Mat& tvec )
+{
+    cv::Mat R;
+    cv::Rodrigues( rvec, R );
+    Eigen::Matrix3f r;
+    cv::cv2eigen( R, r );
+
+    Sophus::SE3f T( r, Eigen::Vector3f (
+                tvec.at<double> (0,0), 
+                tvec.at<double> (0,1), 
+                tvec.at<double> (0,2)  ) );
+
+    return T;
+    
 }
 
 }//end of namespace

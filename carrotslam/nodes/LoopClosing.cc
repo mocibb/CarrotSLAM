@@ -18,15 +18,15 @@
 * along with ORB-SLAM. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "LoopClosing.h"
+#include "nodes/LoopClosing.h"
 
-#include "Sim3Solver.h"
+#include "nodes/Sim3Solver.h"
 
-#include "Converter.h"
+#include "nodes/Converter.h"
 
-#include "Optimizer.h"
+#include "nodes/Optimizer.h"
 
-#include "ORBmatcher.h"
+#include "nodes/ORBmatcher.h"
 
 #include <ros/ros.h>
 

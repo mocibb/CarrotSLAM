@@ -23,6 +23,20 @@
  * SOFTWARE.
  ************************************************************************/
 
+/** \brief
+ * In this file we defines an rgbd visual odometry according to the tutorial written in cnblogs.com/gaoxiang12
+ * The implementation is written in RGBDTutorial_VO class 
+ * The class will read "dimge" from the engine, if successfully match the lase frame stored in its member, 
+ * it will set a new "frame" with estimated transform to the engine.
+ * Otherwise, if the match fails (due to this or that reason), the class will discard this frame and assume the motion is zero. 
+ * Then, it will take this frame as a new frame. 
+ * The parameters can be configured through xml engine.
+ *
+ * Please notify that the Visual Odometry has accumulating drift so the motion is not globally consistent.
+ * Contact me if you have any problem.
+ */
+
+
 #ifndef RGBD_TUTORIAL_VO_H
 #define RGBD_TUTORIAL_VO_H
 
@@ -56,7 +70,18 @@ namespace carrotslam {
 /** \class RGBDTutorial_VO
  * \brief 一起做系列的VO类
  * 读取RGB-D图像 DImage
- * 输出该图像对应的帧：Frame
+ * 输出该图像对应的帧 Frame
+ *
+ * In this file we defines an rgbd visual odometry according to the tutorial written in cnblogs.com/gaoxiang12
+ * The implementation is written in RGBDTutorial_VO class 
+ * The class will read "dimge" from the engine, if successfully match the lase frame stored in its member, 
+ * it will set a new "frame" with estimated transform to the engine.
+ * Otherwise, if the match fails (due to this or that reason), the class will discard this frame and assume the motion is zero. 
+ * Then, it will take this frame as a new frame. 
+ * The parameters can be configured through xml engine.
+ *
+ * Please notify that the Visual Odometry has accumulating drift so the motion is not globally consistent.
+ * Contact me if you have any problem.
  */
 
 /** \brief RGBD Tutorial VO 的参数配置结构体
@@ -69,6 +94,7 @@ struct RGBDTUTORIALVO_PARAMS
     int min_good_match;   //最小匹配数量
     int min_inliers;      //ransac pnp的最小inliers
     double good_match_threshold;   //筛选goodmatch的倍数
+    double max_trans_frames;    // the max transform between two adjacent frames
 };
 
 class RGBDTutorial_VO : public ISLAMNode
@@ -99,12 +125,12 @@ public:
 protected:
 
     typedef enum  { 
-        OK=0, TOO_FEW_FEATURES, 
+        OK=0, TOO_FEW_FEATURES, PNP_FAILED,
     }ComputeStatus;
 
 
     /**
-     * \brief 读取第一帧的数据
+     * \brief 读取第一帧的数据, used in first run and lost recovery.
      */
     void initialize() 
     {

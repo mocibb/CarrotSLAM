@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<engine>
+    <nodes>
+        <node seq="1" name="tum_dataset_reader">
+            <datasetDir></datasetDir>
+        </node>
+        <node seq="2" name="rgbd_tutorial_vo">
+            <!-- -->
+
+        </node>
+    </nodes>
+</engine>

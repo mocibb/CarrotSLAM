@@ -47,7 +47,7 @@ class Frame : public ISLAMData {
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   std::vector<cv::Mat> img_pyramids; //!< 灰度图像金字塔 0是最精细的级别(无缩放的级别)
-  cv::Mat img;                       //!< 彩色图像
+  cv::Mat img;
   Sophus::SE3f T_f_w; //!< 世界坐标到Frame坐标系变换  Transform (f)rame from (w)orld.
   bool is_keyframe = false;   //!<
   std::vector< FeaturePtr > features; //!< 图像特征 image feature

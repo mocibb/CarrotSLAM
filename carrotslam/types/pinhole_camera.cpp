@@ -70,7 +70,6 @@ Eigen::Vector3d PinholeCamera::cam2world( const Eigen::Vector2d& uv, const short
     double x = ( uv[0] - cx_ ) * z / fx_; 
     double y = ( uv[1] - cy_ ) * z / fy_;
     return Eigen::Vector3d( x,y,z );
-
 }
 
 Eigen::Vector2d PinholeCamera::world2cam(const Eigen::Vector3d& xyz) const {

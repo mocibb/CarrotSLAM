@@ -8,6 +8,7 @@
 #include "nodes/rgbd_tutorial_vo.h"
 #include "types/frame.h"
 #include "types/feature.h"
+#include "core/common.h"
 
 #include <boost/lexical_cast.hpp>
 
@@ -18,11 +19,12 @@ RGBDTutorial_VO :: RGBDTutorial_VO( const ISLAMEnginePtr& engine, const std::str
     : ISLAMNode(  engine, name )
 {
     // 读取xml中的参数
-//    params_.detector_name   =   getValue<std::string> ("detector_name");
-//    params_.descriptor_name =   getValue<std::string> ("descriptor_name");
-//    params_.min_good_match  =   boost::lexical_cast<int> ( getValue<std::string> ("min_good_match") );
-//    params_.min_inliers     =   boost::lexical_cast<int> ( getValue<std::string> ("min_inliers") );
-//    params_.good_match_threshold =  boost::lexical_cast<double> ( getValue<std::string> ("good_match_threshold") );
+    params_.detector_name   =   getValue ("detector_name");
+    params_.descriptor_name =   getValue ("descriptor_name");
+    params_.min_good_match  =   boost::lexical_cast<int> ( getValue ("min_good_match") );
+    params_.min_inliers     =   boost::lexical_cast<int> ( getValue ("min_inliers") );
+    params_.good_match_threshold =  boost::lexical_cast<double> ( getValue ("good_match_threshold") );
+    params_.max_trans_frames    =  boost::lexical_cast<double> ( getValue ("max_trans_frames") );
 
     status_ = FIRST_FRAME;
 
@@ -79,6 +81,10 @@ ISLAMNode::RunResult RGBDTutorial_VO::run()
     {
         // 尝试将当前帧与上一帧进行匹配
         ComputeStatus status = compute();
+
+    } else //status_ == LOST 
+    {
+        initialize();
     }
 
     return RUN_SUCCESS; 
@@ -95,11 +101,32 @@ RGBDTutorial_VO::ComputeStatus RGBDTutorial_VO::compute()
 
     if ( matches.size() < this->params_.min_good_match )
     {
-        LOG(WARNING) << "Good match is too few. Aborting this frame";
+        LOG(WARNING) << "Good match is too few. Aborting this frame" << std::endl;
+        status_ = LOST;
         return TOO_FEW_FEATURES;
     }
 
     // 计算ransac icp
+    Sophus::SE3f T;
+    int result = solveRgbdPnP( this_frame_, last_pose_, 
+            new_frame, std::dynamic_pointer_cast<DImage>( new_data ),
+            matches, T );
+
+    // check if the result is valid
+    if ( result != 0 )
+    {
+        status_ = LOST;
+        return PNP_FAILED;
+    }
+
+    //set the new frame 
+    new_frame -> T_f_w = T * this_frame_ -> T_f_w;
+
+    last_pose_ = std::dynamic_pointer_cast<DImage> ( new_data );
+    this_frame_ = new_frame;
+
+    ISLAMDataPtr data = std::dynamic_pointer_cast<ISLAMData>( this_frame_ );
+    engine_->setData( "frame", this_frame_ );
 
     return OK;
 
@@ -160,35 +187,40 @@ int RGBDTutorial_VO::solveRgbdPnP(
 
     for ( auto m:matches )
     {
-        Eigen::Vector2f& p = frame1->features[ m.queryIdx ]->px; 
-        ushort d = image1->depth_image_.ptr<ushort> ( int(p[1]) ) [ int(p[0]) ];
+        Eigen::Vector2d p = frame1->features[ m.queryIdx ]->px.cast<double> (); 
+        ushort d = image1->depth_image().ptr<ushort> ( int(p[1]) ) [ int(p[0]) ];
         if (d == 0)         //深度图中该像素无读数
             continue;
         // 将p和d转换至3D空间坐标
         Eigen::Vector3d point3d = frame1->cam->cam2world( p, d );
-        pts_obj.push_back( cv::Point3f( point3d[0], point3d[1] point3d[2] ) );
-        pts_img.push_back( frame2->features[ m.trainIdx ]->px );
+        pts_obj.push_back( cv::Point3f( point3d[0], point3d[1], point3d[2] ) );
+        pts_img.push_back( cv::Point2f( frame2->features[ m.trainIdx ]->px[0] , frame2->features[ m.trainIdx ]->px[1]) );
     }
     if (pts_obj.size() ==0 || pts_img.size()==0 )
     {
         LOG(WARNING)<<"RGBDPNP::Not enough points"<<std::endl;
         return -1;
     }
-    
+   
     // 构建Camera矩阵
     cv::Mat rvec, tvec, inliers;
-    cv::solvePnPRansac( pts_obj, pts_img, frame1->cam->getCvMat(), 
+    cv::solvePnPRansac( pts_obj, pts_img, frame1->cam->getCvMat(), cv::Mat(), 
             rvec, tvec, false, 100, 1.0 ,100, inliers );
 
     if ( inliers.rows < this->params_.min_inliers )
     {
-        LOG(WARNING)<<"RGBDPNP::Not enough inliers"<<std<<endl;
+        LOG(WARNING)<<"RGBDPNP::Not enough inliers"<<std::endl;
         return -1;
     }
     
-    Eigen::Isometry3d T = cvMat2Eigen( rvec, tvec );
-    Sophus::SE3f T ( T.rotation(),  );
-
+    // check the norm
+    double n = cv::norm( tvec ) + cv::norm( rvec );
+    if ( n>params_.max_trans_frames )
+    {
+        LOG(WARNING) << "RGBDPNP::Too large transform, aborted." << std::endl;
+        return -1;
+    }
+    
+    T = cvMat2SophusSE3f( rvec, tvec );
     return 0;
-    //
 }

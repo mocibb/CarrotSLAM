@@ -161,7 +161,7 @@ class PinholeCamera : public CameraBase {
           {0, fy_, cy_},
           {0, 0, 1}
       };
-      return cv::Mat(3,3,CV64F, camera_matrix);
+      return cv::Mat(3,3, CV_64F, camera_matrix);
   }
 };
 
